@@ -21,7 +21,7 @@ public class SteamCraft
 	@Mod.Instance("SteamCraft")
 	public static SteamCraft instance;
 	
-	@SidedProxy(clientSide = "com.diad.steamcraft.proxy.ClientProxy", serverSide = "com.diad.steamcraft.proxy.ServerProxy")
+	@SidedProxy(clientSide = "com.noiz.steamcraft.proxy.ClientProxy", serverSide = "com.noiz.steamcraft.proxy.ServerProxy")
 	public static IProxy proxy;
 	
 	public final static Block blockTest = 
