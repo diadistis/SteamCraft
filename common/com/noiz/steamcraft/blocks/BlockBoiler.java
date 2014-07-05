@@ -33,11 +33,27 @@ public class BlockBoiler extends BlockContainer implements ITileEntityProvider {
 	
 	public BlockBoiler(Material material) {
 		super(1234, material);
+		setBlockBounds(1.0F/16.0F, 0.0F, 1.0F/16.0F, 1.0F - (1.0F/16.0F), 1.0F, 1.0F - (1.0F/16.0F));
 	}
 
 	@Override
 	public TileEntity createNewTileEntity(World world) {
 		return new TEBoiler();
+	}
+	
+	@Override
+	public boolean renderAsNormalBlock() {		
+		return false;
+	}
+	
+	@Override
+	public boolean isOpaqueCube() {
+		return false;
+	}
+	
+	@Override
+	public int getRenderType() {		
+		return SteamCraft.blockBoilerRenderId;
 	}
 	
 	@Override

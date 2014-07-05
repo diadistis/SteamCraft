@@ -19,4 +19,6 @@ public abstract class CommonProxy {
 	}
 
 	public abstract void registerGUI();
+	
+	public abstract void registerRenderInformation();
 }

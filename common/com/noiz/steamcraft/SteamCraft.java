@@ -28,6 +28,8 @@ public class SteamCraft {
 	@SidedProxy(clientSide = "com.noiz.steamcraft.proxy.ClientProxy", serverSide = "com.noiz.steamcraft.proxy.ServerProxy")
 	public static CommonProxy proxy;
 
+	public static int blockBoilerRenderId;
+	
 	public static final Block blockBoiler = new BlockBoiler(Material.iron)
 		.setHardness(0.5F).setStepSound(Block.soundMetalFootstep)
 		.setUnlocalizedName("Boiler")
@@ -59,6 +61,8 @@ public class SteamCraft {
 		Recipes.registerRecipes();
 		
 		proxy.registerGUI();
+		
+		proxy.registerRenderInformation();
 	}
 
 	@Mod.EventHandler

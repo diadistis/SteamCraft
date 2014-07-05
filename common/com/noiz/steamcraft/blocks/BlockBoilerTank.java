@@ -21,6 +21,7 @@ public class BlockBoilerTank extends Block implements ITileEntityProvider {
 
 	public BlockBoilerTank(Material material) {
 		super(1235, material);
+		setBlockBounds(1.0F/16.0F, 0.0F, 1.0F/16.0F, 1.0F - (1.0F/16.0F), 1.0F, 1.0F - (1.0F/16.0F));
 	}
 
 	@Override
@@ -28,6 +29,16 @@ public class BlockBoilerTank extends Block implements ITileEntityProvider {
 		return new TEBoilerTank();
 	}
 
+	@Override
+	public boolean renderAsNormalBlock() {
+		return false;
+	}
+	
+	@Override
+	public boolean isOpaqueCube() {
+		return false;
+	}
+	
 	@Override
 	@SideOnly(Side.CLIENT)
 	public void registerIcons(IconRegister icon) {

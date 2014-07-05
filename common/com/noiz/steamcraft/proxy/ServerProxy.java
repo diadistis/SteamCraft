@@ -12,4 +12,8 @@ public class ServerProxy extends CommonProxy {
 		NetworkRegistry.instance().registerGuiHandler(SteamCraft.instance,
 				new GuiHandlerServer());
 	}
+
+	@Override
+	public void registerRenderInformation() {
+	}
 }
