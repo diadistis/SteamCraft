@@ -1,6 +1,5 @@
 package com.noiz.steamcraft.entities.tiles;
 
-import net.minecraft.block.BlockChest;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.Item;
@@ -10,60 +9,65 @@ import net.minecraft.tileentity.TileEntity;
 
 public class TEBoiler extends TileEntity implements IInventory {
 
-	private ItemStack storedStack = null;
+	public static final int FuelSlot = 0;
+	public static final int AshesSlot = 1;
+
+	private ItemStack items[] = { null, null };
 
 	@Override
 	public int getSizeInventory() {
-		return 1;
+		return 2;
 	}
 
 	@Override
 	public ItemStack getStackInSlot(int pos) {
-		return storedStack;
+		return pos < 0 || pos > 1 ? null : items[pos];
 	}
 
 	@Override
 	public ItemStack decrStackSize(int pos, int count) {
-		if (storedStack == null) //
+		if (pos < 0 || pos > 1)
+			return null;
+		if (items[pos] == null) //
 			return null;
 
 		ItemStack itemstack = null;
 
-		if (storedStack.stackSize <= count) {
-			itemstack = storedStack;
-			storedStack = null;
-			this.onInventoryChanged();
+		if (items[pos].stackSize <= count) {
+			itemstack = items[pos];
+			items[pos] = null;
+			onInventoryChanged();
 			return itemstack;
 		}
 
-		itemstack = storedStack.splitStack(count);
+		itemstack = items[pos].splitStack(count);
 
-		if (storedStack.stackSize == 0)
-			storedStack = null;
+		if (items[pos].stackSize == 0)
+			items[pos] = null;
 
-		this.onInventoryChanged();
+		onInventoryChanged();
 		return itemstack;
 	}
 
 	@Override
 	public ItemStack getStackInSlotOnClosing(int pos) {
-		if (storedStack == null) //
-			return null;
-
-		ItemStack itemstack = storedStack;
-		storedStack = null;
-		return itemstack;
+		return null;
 	}
 
 	@Override
 	public void setInventorySlotContents(int pos, ItemStack itemstack) {
-		storedStack = itemstack;
+		System.out.println("setInventorySlotContents");
+
+		if (pos < 0 || pos > 1) //
+			return;
+
+		items[pos] = itemstack;
 
 		if (itemstack != null
 				&& itemstack.stackSize > this.getInventoryStackLimit())
 			itemstack.stackSize = this.getInventoryStackLimit();
 
-		this.onInventoryChanged();
+		onInventoryChanged();
 	}
 
 	@Override
@@ -88,48 +92,57 @@ public class TEBoiler extends TileEntity implements IInventory {
 
 	@Override
 	public void openChest() {
-        worldObj.addBlockEvent(xCoord, yCoord, zCoord, getBlockType().blockID, 1, 1);
-        worldObj.notifyBlocksOfNeighborChange(xCoord, yCoord, zCoord, getBlockType().blockID);
-        worldObj.notifyBlocksOfNeighborChange(xCoord, yCoord - 1, zCoord, getBlockType().blockID);
 	}
 
 	@Override
 	public void closeChest() {
-        if (getBlockType() != null && getBlockType() instanceof BlockChest)
-        {
-            worldObj.addBlockEvent(xCoord, yCoord, zCoord, getBlockType().blockID, 1, 0);
-            worldObj.notifyBlocksOfNeighborChange(xCoord, yCoord, zCoord, getBlockType().blockID);
-            worldObj.notifyBlocksOfNeighborChange(xCoord, yCoord - 1, zCoord, getBlockType().blockID);
-        }
 	}
 
 	@Override
-	public boolean isItemValidForSlot(int i, ItemStack itemstack) {
-		return itemstack.itemID == Item.coal.itemID;
+	public boolean isItemValidForSlot(int pos, ItemStack itemstack) {
+		System.out.println("isItemValidForSlot");
+		return pos == 0 && itemstack.getItem().itemID == Item.coal.itemID;
 	}
-	
-	
+
 	@Override
-	public void readFromNBT(NBTTagCompound par1NBTTagCompound)
-	{
+	public void readFromNBT(NBTTagCompound par1NBTTagCompound) {
 		super.readFromNBT(par1NBTTagCompound);
-		boolean empty = par1NBTTagCompound.getBoolean("Empty");
-		if( !empty ) {
-			NBTTagCompound fuel = (NBTTagCompound) par1NBTTagCompound.getTag("Fuel");
-			storedStack = ItemStack.loadItemStackFromNBT(fuel);
+
+		boolean empty = par1NBTTagCompound.getBoolean("NoAshes");
+
+		if (!empty) {
+			NBTTagCompound ashes = (NBTTagCompound) par1NBTTagCompound
+					.getTag("Ashes");
+			items[AshesSlot] = ItemStack.loadItemStackFromNBT(ashes);
 		}
-		else storedStack = null;
+
+		empty = par1NBTTagCompound.getBoolean("Empty");
+
+		if (!empty) {
+			NBTTagCompound fuel = (NBTTagCompound) par1NBTTagCompound
+					.getTag("Fuel");
+			items[FuelSlot] = ItemStack.loadItemStackFromNBT(fuel);
+		} else
+			items[FuelSlot] = null;
 	}
 
 	@Override
-	public void writeToNBT(NBTTagCompound par1NBTTagCompound)
-	{
+	public void writeToNBT(NBTTagCompound par1NBTTagCompound) {
 		super.writeToNBT(par1NBTTagCompound);
-		par1NBTTagCompound.setBoolean("Empty", storedStack == null);
-		if( storedStack != null )
-		{
+
+		par1NBTTagCompound.setBoolean("NoAshes", items[AshesSlot] == null);
+
+		if (items[AshesSlot] != null) {
+			NBTTagCompound ashes = new NBTTagCompound();
+			items[AshesSlot].writeToNBT(ashes);
+			par1NBTTagCompound.setCompoundTag("Ashes", ashes);
+		}
+
+		par1NBTTagCompound.setBoolean("Empty", items[FuelSlot] == null);
+
+		if (items[FuelSlot] != null) {
 			NBTTagCompound fuel = new NBTTagCompound();
-			storedStack.writeToNBT(fuel);
+			items[FuelSlot].writeToNBT(fuel);
 			par1NBTTagCompound.setCompoundTag("Fuel", fuel);
 		}
 	}
