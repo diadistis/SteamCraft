@@ -88,7 +88,12 @@ public class TileEntityTank extends TileEntity {
 		waterAmount = par1nbtTagCompound.getFloat("Water");
 		pressure = par1nbtTagCompound.getFloat("Pressure");
 		temperature = par1nbtTagCompound.getFloat("Temperature");
-		heaterLocation = par1nbtTagCompound.getIntArray("HeaterLoc");
+
+		boolean hasHeater = par1nbtTagCompound.getBoolean("HasHeater");
+		if (hasHeater)
+			heaterLocation = par1nbtTagCompound.getIntArray("HeaterLoc");
+		else
+			heaterLocation = null;
 	}
 
 	@Override
@@ -99,7 +104,10 @@ public class TileEntityTank extends TileEntity {
 		par1nbtTagCompound.setFloat("Water", waterAmount);
 		par1nbtTagCompound.setFloat("Pressure", pressure);
 		par1nbtTagCompound.setFloat("Temperature", temperature);
-		par1nbtTagCompound.setIntArray("HeaterLoc", heaterLocation);
+
+		par1nbtTagCompound.setBoolean("HasHeater", heaterLocation != null);
+		if (heaterLocation != null)
+			par1nbtTagCompound.setIntArray("HeaterLoc", heaterLocation);
 	}
 
 	@Override
