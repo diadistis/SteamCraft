@@ -103,8 +103,8 @@ public class BlockSteelHeater extends BlockContainer implements ITileEntityProvi
 		if (world.isRemote) //
 			return true;
 
-		if ((TileEntityHeater) world.getBlockTileEntity(i, j, k) != null)
-			entityplayer.openGui(SteamCraft.instance, GuiHandlerServer.GUI_SteelHeaterID, world, i, j, k);
+		if (world.getBlockTileEntity(i, j, k) != null)
+			entityplayer.openGui(SteamCraft.instance, GuiHandlerServer.GUI_HeaterID, world, i, j, k);
 		return true;
 	}
 }

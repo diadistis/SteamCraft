@@ -11,24 +11,22 @@ import cpw.mods.fml.common.network.IGuiHandler;
 
 public class GuiHandlerServer implements IGuiHandler {
 
-	public static final int GUI_SteelHeaterID = 12;
+	public static final int GUI_HeaterID = 12;
+	public static final int GUI_TankID = 14;
 
 	@Override
-	public Object getServerGuiElement(int ID, EntityPlayer player, World world,
-			int x, int y, int z) {
+	public Object getServerGuiElement(int ID, EntityPlayer player, World world, int x, int y, int z) {
 
 		TileEntity te = world.getBlockTileEntity(x, y, z);
 		switch (ID) {
-		case GUI_SteelHeaterID:
-			return new ContainerHeater(player.inventory, ((TileEntityHeater) te),
-					world, x, y, z);
+		case GUI_HeaterID:
+			return new ContainerHeater(player.inventory, ((TileEntityHeater) te), world, x, y, z);
 		}
 		return null;
 	}
 
 	@Override
-	public Object getClientGuiElement(int ID, EntityPlayer player, World world,
-			int x, int y, int z) {
+	public Object getClientGuiElement(int ID, EntityPlayer player, World world, int x, int y, int z) {
 		return null;
 	}
 

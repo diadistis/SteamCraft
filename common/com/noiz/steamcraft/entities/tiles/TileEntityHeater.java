@@ -32,6 +32,10 @@ public class TileEntityHeater extends TileEntity implements IInventory {
 	private float temperature = 0;
 	public int quantizedTemperature = 0;
 
+	public float temperature() {
+		return temperature;
+	}
+
 	@Override
 	public int getSizeInventory() {
 		return 2;
@@ -79,8 +83,7 @@ public class TileEntityHeater extends TileEntity implements IInventory {
 
 		items[pos] = itemstack;
 
-		if (itemstack != null
-				&& itemstack.stackSize > this.getInventoryStackLimit())
+		if (itemstack != null && itemstack.stackSize > this.getInventoryStackLimit())
 			itemstack.stackSize = this.getInventoryStackLimit();
 
 		onInventoryChanged();
@@ -136,8 +139,7 @@ public class TileEntityHeater extends TileEntity implements IInventory {
 			}
 			if (ashConsumed) {
 				decrStackSize(FuelSlot, 1);
-				fuelExpirationTime = TFC_Time.getTotalTicks()
-						+ TicksPerFuelItem;
+				fuelExpirationTime = TFC_Time.getTotalTicks() + TicksPerFuelItem;
 				hasFuel = true;
 				updateInventory = true;
 			}
@@ -183,16 +185,14 @@ public class TileEntityHeater extends TileEntity implements IInventory {
 		boolean empty = par1NBTTagCompound.getBoolean("NoAshes");
 
 		if (!empty) {
-			NBTTagCompound ashes = (NBTTagCompound) par1NBTTagCompound
-					.getTag("Ashes");
+			NBTTagCompound ashes = (NBTTagCompound) par1NBTTagCompound.getTag("Ashes");
 			items[AshesSlot] = ItemStack.loadItemStackFromNBT(ashes);
 		}
 
 		empty = par1NBTTagCompound.getBoolean("Empty");
 
 		if (!empty) {
-			NBTTagCompound fuel = (NBTTagCompound) par1NBTTagCompound
-					.getTag("Fuel");
+			NBTTagCompound fuel = (NBTTagCompound) par1NBTTagCompound.getTag("Fuel");
 			items[FuelSlot] = ItemStack.loadItemStackFromNBT(fuel);
 		} else
 			items[FuelSlot] = null;
@@ -225,8 +225,7 @@ public class TileEntityHeater extends TileEntity implements IInventory {
 	public Packet getDescriptionPacket() {
 		NBTTagCompound tagCompound = new NBTTagCompound();
 		writeToNBT(tagCompound);
-		return new Packet132TileEntityData(xCoord, yCoord, zCoord, 5,
-				tagCompound);
+		return new Packet132TileEntityData(xCoord, yCoord, zCoord, 5, tagCompound);
 	}
 
 	@Override

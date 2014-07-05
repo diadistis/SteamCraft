@@ -22,7 +22,7 @@ public class GuiHandler extends GuiHandlerServer {
 		
 		TileEntity te = world.getBlockTileEntity(x, y, z);
 		switch (ID) {
-		case GUI_SteelHeaterID:
+		case GUI_HeaterID:
 			return new GuiHeater(player.inventory, ((TileEntityHeater) te), world, x,
 					y, z);
 		}
