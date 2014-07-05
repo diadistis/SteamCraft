@@ -73,12 +73,9 @@ public class BlockBoiler extends BlockContainer implements ITileEntityProvider {
 		case 1:
         	world.setBlockMetadataWithNotify(i, j, k, 5, 2);
 			break;
-		case 2:
-        	world.setBlockMetadataWithNotify(i, j, k, 3, 2);
-			break;
-		case 3:
-        	world.setBlockMetadataWithNotify(i, j, k, 4, 2);
-			break;
+		default:
+			world.setBlockMetadataWithNotify(i, j, k, l+1, 2);
+			break;			
 		}
     }
     
