@@ -4,9 +4,12 @@ import net.minecraft.block.BlockContainer;
 import net.minecraft.block.ITileEntityProvider;
 import net.minecraft.block.material.Material;
 import net.minecraft.client.renderer.texture.IconRegister;
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.Icon;
+import net.minecraft.util.MathHelper;
 import net.minecraft.world.World;
 
 import com.noiz.steamcraft.SteamCraft;
@@ -17,7 +20,7 @@ import com.noiz.steamcraft.gui.GuiHandlerServer;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
-public class BlockTest extends BlockContainer implements ITileEntityProvider {
+public class BlockBoiler extends BlockContainer implements ITileEntityProvider {
 
 	@SideOnly(Side.CLIENT)
 	public static Icon frontIcon;
@@ -25,7 +28,7 @@ public class BlockTest extends BlockContainer implements ITileEntityProvider {
 	@SideOnly(Side.CLIENT)
 	public static Icon sideIcon;
 	
-	public BlockTest(Material material) {
+	public BlockBoiler(Material material) {
 		super(1234, material);
 	}
 
@@ -38,11 +41,7 @@ public class BlockTest extends BlockContainer implements ITileEntityProvider {
 	@SideOnly(Side.CLIENT)
 	public Icon getIcon(int side, int metadata) 
 	{
-		if (side==2) {
-			return frontIcon;
-		} else {
-			return sideIcon;
-		}
+		return side != metadata ? sideIcon : frontIcon;
 	}
 	
 	@Override
@@ -53,6 +52,26 @@ public class BlockTest extends BlockContainer implements ITileEntityProvider {
 		sideIcon = icon.registerIcon(SteamCraftConstants.ModId.toLowerCase() + ":boiler_sides");
 	};
 
+    public void onBlockPlacedBy(World world, int i, int j, int k, EntityLivingBase entityliving, ItemStack par6ItemStack)
+    {
+        int l = MathHelper.floor_double((double)(entityliving.rotationYaw * 4.0F / 360.0F) + 0.5D) & 3;
+
+        switch (l) {
+        case 0:
+        	world.setBlockMetadataWithNotify(i, j, k, 2, 2);
+			break;
+		case 1:
+        	world.setBlockMetadataWithNotify(i, j, k, 5, 2);
+			break;
+		case 2:
+        	world.setBlockMetadataWithNotify(i, j, k, 3, 2);
+			break;
+		case 3:
+        	world.setBlockMetadataWithNotify(i, j, k, 4, 2);
+			break;
+		}
+    }
+    
 	@Override
 	public boolean onBlockActivated(World world, int i, int j, int k,
 			EntityPlayer entityplayer, int par6, float par7, float par8,
