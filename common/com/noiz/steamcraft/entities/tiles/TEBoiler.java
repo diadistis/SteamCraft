@@ -5,6 +5,7 @@ import net.minecraft.inventory.IInventory;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.network.INetworkManager;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.Packet132TileEntityData;
 import net.minecraft.tileentity.TileEntity;
@@ -114,6 +115,9 @@ public class TEBoiler extends TileEntity implements IInventory {
 
 	@Override
 	public void updateEntity() {
+		if (!worldObj.isRemote) //
+			return;
+
 		if (TFC_Time.getTotalTicks() > fuelExpirationTime)
 			hasFuel = false;
 
@@ -149,9 +153,6 @@ public class TEBoiler extends TileEntity implements IInventory {
 
 		if (updateInventory)
 			onInventoryChanged();
-
-		if (!worldObj.isRemote) //
-			updateFireIcon();
 	}
 
 	private void updateFireIcon() {
@@ -222,7 +223,13 @@ public class TEBoiler extends TileEntity implements IInventory {
 	public Packet getDescriptionPacket() {
 		NBTTagCompound tagCompound = new NBTTagCompound();
 		writeToNBT(tagCompound);
-		return new Packet132TileEntityData(xCoord, yCoord, zCoord, 1,
+		return new Packet132TileEntityData(xCoord, yCoord, zCoord, 5,
 				tagCompound);
+	}
+
+	@Override
+	public void onDataPacket(INetworkManager net, Packet132TileEntityData pkt) {
+		readFromNBT(pkt.data);
+		updateFireIcon();
 	}
 }

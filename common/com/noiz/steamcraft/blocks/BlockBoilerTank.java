@@ -18,7 +18,7 @@ public class BlockBoilerTank extends Block implements ITileEntityProvider {
 
 	@SideOnly(Side.CLIENT)
 	public static Icon icon;
-	
+
 	public BlockBoilerTank(Material material) {
 		super(1235, material);
 	}
@@ -27,18 +27,28 @@ public class BlockBoilerTank extends Block implements ITileEntityProvider {
 	public TileEntity createNewTileEntity(World world) {
 		return new TEBoilerTank();
 	}
-	
+
 	@Override
 	@SideOnly(Side.CLIENT)
-	public void registerIcons(IconRegister icon) 
-	{
-		BlockBoilerTank.icon = icon.registerIcon(SteamCraftConstants.ModId.toLowerCase() + ":boiler_sides");
+	public void registerIcons(IconRegister icon) {
+		BlockBoilerTank.icon = icon.registerIcon(SteamCraftConstants.ModId
+				.toLowerCase() + ":boiler_sides");
 	};
 
 	@Override
 	@SideOnly(Side.CLIENT)
-	public Icon getIcon(int side, int metadata) 
-	{
+	public Icon getIcon(int side, int metadata) {
 		return icon;
+	}
+
+	@Override
+	public int onBlockPlaced(World world, int x, int y, int z, int side,
+			float hitX, float hitY, float hitZ, int metadata) {
+
+		// TEBoilerTank controller = (TEBoilerTank) world.getBlockTileEntity(x,
+		// y,
+		// z);
+
+		return metadata;
 	}
 }
