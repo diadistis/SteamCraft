@@ -1,5 +1,8 @@
 package com.noiz.steamcraft.blocks;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import net.minecraft.block.Block;
 import net.minecraft.block.ITileEntityProvider;
 import net.minecraft.block.material.Material;
@@ -9,6 +12,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.Icon;
 import net.minecraft.world.World;
+import net.minecraftforge.common.ForgeDirection;
 import TFC.TFCItems;
 
 import com.noiz.steamcraft.SteamCraft;
@@ -20,6 +24,8 @@ import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
 public class BlockSteelTank extends Block implements ITileEntityProvider {
+
+	private static final Set<ForgeDirection> NoDirections = new HashSet<>();
 
 	@SideOnly(Side.CLIENT)
 	public static Icon icon;
@@ -42,6 +48,11 @@ public class BlockSteelTank extends Block implements ITileEntityProvider {
 	@Override
 	public boolean isOpaqueCube() {
 		return false;
+	}
+
+	@Override
+	public int getRenderType() {
+		return SteamCraft.blockTankRenderId;
 	}
 
 	@Override
@@ -80,5 +91,9 @@ public class BlockSteelTank extends Block implements ITileEntityProvider {
 
 		player.openGui(SteamCraft.instance, GuiHandlerServer.GUI_TankID, world, x, y, z);
 		return true;
+	}
+
+	public Set<ForgeDirection> getConnectedSides() {
+		return NoDirections;
 	}
 }

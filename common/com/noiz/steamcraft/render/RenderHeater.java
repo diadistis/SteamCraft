@@ -25,8 +25,20 @@ public class RenderHeater implements ISimpleBlockRenderingHandler {
 	}
 	
 	@Override
-	public void renderInventoryBlock(Block block, int metadata, int modelID,
-			RenderBlocks renderer) {
+	public void renderInventoryBlock(Block block, int metadata, int modelId,
+			RenderBlocks renderer) 
+	{
+		if(modelId == SteamCraft.blockHeaterRenderId)
+		{
+			renderer.setRenderBounds(1.0F/8.0F, 0.0F, 1.0F/8.0F, 1.0F - (1.0F/8.0F), 1.0F, 1.0F - (1.0F/8.0F));
+			RenderingHelper.renderInvBlock(block, metadata, renderer);
+
+			renderer.setRenderBounds(1.0F/16.0F, 0.0F, 1.0F/16.0F, 1.0F - (1.0F/16.0F), 1.0F/8.0F, 1.0F - (1.0F/16.0F));
+			RenderingHelper.renderInvBlock(block, metadata, renderer);
+
+			renderer.setRenderBounds(1.0F/16.0F, 1 - (1.0F/8.0F), 1.0F/16.0F, 1.0F - (1.0F/16.0F), 1.0F, 1.0F - (1.0F/16.0F));
+			RenderingHelper.renderInvBlock(block, metadata, renderer);
+		}
 	}
 
 	@Override
@@ -41,13 +53,11 @@ public class RenderHeater implements ISimpleBlockRenderingHandler {
 
 	@Override
 	public boolean shouldRender3DInInventory() {
-		// TODO Auto-generated method stub
-		return false;
+		return true;
 	}
 
 	@Override
 	public int getRenderId() {
-		// TODO Auto-generated method stub
 		return 0;
 	}
 }
