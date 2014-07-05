@@ -28,7 +28,7 @@ public class GuiBoiler extends GuiContainer {
 
 		this.boiler = boiler;
 		this.player = player.player;
-		xSize = 176;
+		xSize = 175;
 		ySize = 85 + PlayerInventory.invYSize;
 	}
 
@@ -38,17 +38,13 @@ public class GuiBoiler extends GuiContainer {
 	}
 
 	protected void drawGuiContainerForegroundLayer() {
-		// drawCenteredString(fontRenderer,StringUtil.localize("gui.LogPile"),
-		// 87, 6, 0x000000);
-		// fontRenderer.drawString("Log Pile", 28, 6, 0x404040);
-		fontRenderer.drawString(StringUtil.localize("gui.Inventory"), 8,
-				(ySize - 96) + 2, 0x404040);
+		fontRenderer.drawString("Fuel", 8, (ySize - 96) + 2, 0x404040);
 	}
 
 	@Override
 	protected void drawGuiContainerBackgroundLayer(float f, int i, int j) {
-		TFC_Core.bindTexture(new ResourceLocation(SteamCraftConstants.ModId,
-				SteamCraftConstants.AssetPathGui + "gui_boiler.png"));
+		TFC_Core.bindTexture(new ResourceLocation(
+				"steamcraft:textures/gui/gui_boiler.png"));
 		GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
 		int l = (width - xSize) / 2;
 		int i1 = (height - ySize) / 2;

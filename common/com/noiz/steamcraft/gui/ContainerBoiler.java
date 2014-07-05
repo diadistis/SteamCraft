@@ -15,12 +15,10 @@ public class ContainerBoiler extends Container {
 			World world, int x, int y, int z) {
 
 		this.boiler = boiler;
-		// Input slot
-		addSlotToContainer(new Slot(boiler, 0, 80, 29));
+		addSlotToContainer(new Slot(boiler, 0, 84, 25));
+		addSlotToContainer(new Slot(boiler, 1, 84, 46));
 
 		bindPlayerInventory(inventoryplayer);
-
-		// barrel.updateGui();
 	}
 
 	@Override
@@ -32,12 +30,12 @@ public class ContainerBoiler extends Container {
 		for (int i = 0; i < 3; i++) {
 			for (int j = 0; j < 9; j++) {
 				addSlotToContainer(new Slot(inventoryPlayer, j + i * 9 + 9,
-						8 + j * 18, 84 + i * 18));
+						7 + j * 18, 90 + i * 18));
 			}
 		}
 
 		for (int i = 0; i < 9; i++) {
-			addSlotToContainer(new Slot(inventoryPlayer, i, 8 + i * 18, 142));
+			addSlotToContainer(new Slot(inventoryPlayer, i, 7 + i * 18, 148));
 		}
 	}
 }
