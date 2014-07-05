@@ -5,14 +5,24 @@ import net.minecraft.inventory.IInventory;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.tileentity.TileEntity;
+import TFC.Core.TFC_Time;
 
-public class TEBoiler extends TileEntity implements IInventory {
+public class TEBoiler extends NetTileEntity implements IInventory {
 
 	public static final int FuelSlot = 0;
 	public static final int AshesSlot = 1;
 
+	public static final int TicksPerFuelItem = 30;
+	public static final int TicksToTempIncr = 50;
+	public static final float TempIncrStep = 150;
+	public static final float MaxTemperature = 4000f;
+
 	private ItemStack items[] = { null, null };
+
+	private boolean hasFuel = false;
+	private long fuelExpirationTime = 0;
+	private long temperatureStepTime = 0;
+	private float temperature = 0;
 
 	@Override
 	public int getSizeInventory() {
@@ -98,10 +108,34 @@ public class TEBoiler extends TileEntity implements IInventory {
 
 	@Override
 	public void updateEntity() {
-		int side = 7 & worldObj.getBlockMetadata(xCoord, yCoord, zCoord);
-		int on_fire = items[FuelSlot] == null ? 0 : 8;
-		int metadata = side | on_fire;
-		
+		if (worldObj.isRemote) //
+			return;
+
+		if (TFC_Time.getTotalTicks() > fuelExpirationTime)
+			hasFuel = false;
+
+		if (!hasFuel && items[FuelSlot] != null) {
+			System.out.println(this + ": consume");
+			decrStackSize(FuelSlot, 1);
+			fuelExpirationTime = TFC_Time.getTotalTicks() + TicksPerFuelItem;
+			hasFuel = true;
+		}
+
+		if (TFC_Time.getTotalTicks() > temperatureStepTime) {
+			temperature += hasFuel ? TempIncrStep : -.8 * TempIncrStep;
+			temperature = Math.max(0, Math.min(temperature, MaxTemperature));
+			System.out.println(this + " @ " + temperature);
+			temperatureStepTime = TFC_Time.getTotalTicks() + TicksToTempIncr;
+		}
+
+		updateFireIcon();
+	}
+
+	private void updateFireIcon() {
+		int metadata = worldObj.getBlockMetadata(xCoord, yCoord, zCoord);
+		int side = 7 & metadata;
+
+		metadata = side | (temperature > 0 ? 8 : 0);
 		worldObj.setBlockMetadataWithNotify(xCoord, yCoord, zCoord, metadata, 3);
 	}
 
@@ -113,6 +147,8 @@ public class TEBoiler extends TileEntity implements IInventory {
 	@Override
 	public void readFromNBT(NBTTagCompound par1NBTTagCompound) {
 		super.readFromNBT(par1NBTTagCompound);
+
+		temperature = par1NBTTagCompound.getFloat("Temperature");
 
 		boolean empty = par1NBTTagCompound.getBoolean("NoAshes");
 
@@ -135,6 +171,8 @@ public class TEBoiler extends TileEntity implements IInventory {
 	@Override
 	public void writeToNBT(NBTTagCompound par1NBTTagCompound) {
 		super.writeToNBT(par1NBTTagCompound);
+
+		par1NBTTagCompound.setFloat("Temperature", temperature);
 
 		par1NBTTagCompound.setBoolean("NoAshes", items[AshesSlot] == null);
 
