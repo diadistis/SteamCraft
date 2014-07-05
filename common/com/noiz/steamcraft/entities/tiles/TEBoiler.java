@@ -56,8 +56,6 @@ public class TEBoiler extends TileEntity implements IInventory {
 
 	@Override
 	public void setInventorySlotContents(int pos, ItemStack itemstack) {
-		System.out.println("setInventorySlotContents");
-
 		if (pos < 0 || pos > 1) //
 			return;
 
@@ -99,8 +97,16 @@ public class TEBoiler extends TileEntity implements IInventory {
 	}
 
 	@Override
+	public void updateEntity() {
+		int side = 7 & worldObj.getBlockMetadata(xCoord, yCoord, zCoord);
+		int on_fire = items[FuelSlot] == null ? 0 : 8;
+		int metadata = side | on_fire;
+		
+		worldObj.setBlockMetadataWithNotify(xCoord, yCoord, zCoord, metadata, 3);
+	}
+
+	@Override
 	public boolean isItemValidForSlot(int pos, ItemStack itemstack) {
-		System.out.println("isItemValidForSlot");
 		return pos == 0 && itemstack.getItem().itemID == Item.coal.itemID;
 	}
 

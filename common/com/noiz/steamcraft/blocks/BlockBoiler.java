@@ -23,7 +23,10 @@ import cpw.mods.fml.relauncher.SideOnly;
 public class BlockBoiler extends BlockContainer implements ITileEntityProvider {
 
 	@SideOnly(Side.CLIENT)
-	public static Icon frontIcon;
+	public static Icon frontOffIcon;
+
+	@SideOnly(Side.CLIENT)
+	public static Icon frontOnIcon;
 	
 	@SideOnly(Side.CLIENT)
 	public static Icon sideIcon;
@@ -41,14 +44,21 @@ public class BlockBoiler extends BlockContainer implements ITileEntityProvider {
 	@SideOnly(Side.CLIENT)
 	public Icon getIcon(int side, int metadata) 
 	{
-		return side != metadata ? sideIcon : frontIcon;
+		// return side != (metadata & 7) ? sideIcon : frontOffIcon;
+		
+		if( side != (metadata & 7) )
+			return sideIcon;
+		if( (metadata & 8) != 0 )
+			return frontOnIcon;
+		return frontOffIcon;
 	}
 	
 	@Override
 	@SideOnly(Side.CLIENT)
 	public void registerIcons(IconRegister icon) 
 	{
-		frontIcon = icon.registerIcon(SteamCraftConstants.ModId.toLowerCase() + ":boiler_off");
+		frontOffIcon = icon.registerIcon(SteamCraftConstants.ModId.toLowerCase() + ":boiler_off");
+		frontOnIcon = icon.registerIcon(SteamCraftConstants.ModId.toLowerCase() + ":boiler_on");
 		sideIcon = icon.registerIcon(SteamCraftConstants.ModId.toLowerCase() + ":boiler_sides");
 	};
 
@@ -80,12 +90,8 @@ public class BlockBoiler extends BlockContainer implements ITileEntityProvider {
 		if (world.isRemote) //
 			return true;
 
-		if ((TEBoiler) world.getBlockTileEntity(i, j, k) != null) {
-			// TEBoiler boiler = (TEBoiler) world.getBlockTileEntity(i, j, k);
-			// ItemStack is = entityplayer.getCurrentEquippedItem();
-
+		if ((TEBoiler) world.getBlockTileEntity(i, j, k) != null)
 			entityplayer.openGui(SteamCraft.instance, GuiHandlerServer.GUI_BoilerID, world, i, j, k);
-		}
 		return true;
 	}
 }
