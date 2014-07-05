@@ -8,9 +8,12 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.Packet132TileEntityData;
 import net.minecraft.tileentity.TileEntity;
+import TFC.API.Constant.TFCBlockID;
 import TFC.Core.TFC_Time;
 
 public class TEBoiler extends TileEntity implements IInventory {
+
+	public static final int AshItemId = TFCBlockID.Dirt;
 
 	public static final int FuelSlot = 0;
 	public static final int AshesSlot = 1;
@@ -114,20 +117,38 @@ public class TEBoiler extends TileEntity implements IInventory {
 		if (TFC_Time.getTotalTicks() > fuelExpirationTime)
 			hasFuel = false;
 
+		boolean updateInventory = false;
+
 		if (!hasFuel && items[FuelSlot] != null) {
-			decrStackSize(FuelSlot, 1);
-			fuelExpirationTime = TFC_Time.getTotalTicks() + TicksPerFuelItem;
-			hasFuel = true;
+			boolean ashConsumed = true;
+			if (temperature > 0) {
+				if (items[AshesSlot] == null)
+					items[AshesSlot] = new ItemStack(AshItemId, 1, 0);
+				else if (items[AshesSlot].stackSize < 64)
+					++items[AshesSlot].stackSize;
+				else
+					ashConsumed = false;
+			}
+			if (ashConsumed) {
+				decrStackSize(FuelSlot, 1);
+				fuelExpirationTime = TFC_Time.getTotalTicks()
+						+ TicksPerFuelItem;
+				hasFuel = true;
+				updateInventory = true;
+			}
 		}
 
 		if (TFC_Time.getTotalTicks() > temperatureStepTime) {
 			temperature += hasFuel ? TempIncrStep : -.8 * TempIncrStep;
 			double t = temperature;
 			temperature = Math.max(0, Math.min(temperature, MaxTemperature));
-			if( t != temperature )
-				onInventoryChanged();
+			if (t != temperature)
+				updateInventory = true;
 			temperatureStepTime = TFC_Time.getTotalTicks() + TicksToTempIncr;
 		}
+
+		if (updateInventory)
+			onInventoryChanged();
 
 		if (!worldObj.isRemote) //
 			updateFireIcon();

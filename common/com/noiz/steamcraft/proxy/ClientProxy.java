@@ -2,7 +2,7 @@ package com.noiz.steamcraft.proxy;
 
 import net.minecraftforge.common.MinecraftForge;
 
-import com.noiz.steamcraft.gui.client.GuiHandler;
+import com.noiz.steamcraft.handlers.client.GuiHandler;
 
 import cpw.mods.fml.common.network.NetworkRegistry;
 

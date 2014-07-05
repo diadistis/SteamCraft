@@ -1,4 +1,4 @@
-package com.noiz.steamcraft.gui.client;
+package com.noiz.steamcraft.gui;
 
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.inventory.GuiContainer;
@@ -11,8 +11,8 @@ import org.lwjgl.opengl.GL11;
 import TFC.Core.TFC_Core;
 import TFC.Core.Player.PlayerInventory;
 
+import com.noiz.steamcraft.containers.ContainerBoiler;
 import com.noiz.steamcraft.entities.tiles.TEBoiler;
-import com.noiz.steamcraft.gui.ContainerBoiler;
 
 public class GuiBoiler extends GuiContainer {
 

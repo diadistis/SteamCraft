@@ -1,7 +1,7 @@
 package com.noiz.steamcraft.proxy;
 
 import com.noiz.steamcraft.SteamCraft;
-import com.noiz.steamcraft.gui.GuiHandlerServer;
+import com.noiz.steamcraft.handlers.GuiHandlerServer;
 
 import cpw.mods.fml.common.network.NetworkRegistry;
 

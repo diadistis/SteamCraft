@@ -1,4 +1,4 @@
-package com.noiz.steamcraft.gui.client;
+package com.noiz.steamcraft.handlers.client;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.inventory.GuiInventory;
@@ -11,7 +11,8 @@ import net.minecraftforge.event.ForgeSubscribe;
 import TFC.GUI.GuiInventoryTFC;
 
 import com.noiz.steamcraft.entities.tiles.TEBoiler;
-import com.noiz.steamcraft.gui.GuiHandlerServer;
+import com.noiz.steamcraft.gui.GuiBoiler;
+import com.noiz.steamcraft.handlers.GuiHandlerServer;
 
 public class GuiHandler extends GuiHandlerServer {
 

@@ -1,4 +1,4 @@
-package com.noiz.steamcraft.gui;
+package com.noiz.steamcraft.containers;
 
 import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.Slot;

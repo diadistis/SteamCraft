@@ -15,7 +15,7 @@ import net.minecraft.world.World;
 import com.noiz.steamcraft.SteamCraft;
 import com.noiz.steamcraft.SteamCraftConstants;
 import com.noiz.steamcraft.entities.tiles.TEBoiler;
-import com.noiz.steamcraft.gui.GuiHandlerServer;
+import com.noiz.steamcraft.handlers.GuiHandlerServer;
 
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
