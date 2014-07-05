@@ -18,8 +18,7 @@ public class GuiHeater extends GuiContainer {
 
 	private TileEntityHeater heater;
 
-	public GuiHeater(InventoryPlayer player, TileEntityHeater heater, World world,
-			int x, int y, int z) {
+	public GuiHeater(InventoryPlayer player, TileEntityHeater heater, World world, int x, int y, int z) {
 		super(new ContainerHeater(player, heater, world, x, y, z));
 
 		this.heater = heater;
@@ -38,25 +37,20 @@ public class GuiHeater extends GuiContainer {
 
 	@Override
 	protected void drawGuiContainerBackgroundLayer(float f, int i, int j) {
-		TFC_Core.bindTexture(new ResourceLocation(
-				"steamcraft:textures/gui/gui_heater.png"));
+		TFC_Core.bindTexture(new ResourceLocation("steamcraft:textures/gui/gui_heater.png"));
 		GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
 		int w = (width - xSize) / 2;
 		int h = (height - ySize) / 2;
 		drawTexturedModalRect(w, h, 0, 0, xSize, ySize);
 
-		drawTexturedModalRect(w + 8, h + 64 - heater.quantizedTemperature, 185,
-				31, 15, 6);
+		drawTexturedModalRect(w + 8, h + 64 - heater.quantizedTemperature, 185, 31, 15, 6);
 
-		PlayerInventory.drawInventory(this, width, height, ySize
-				- PlayerInventory.invYSize);
+		PlayerInventory.drawInventory(this, width, height, ySize - PlayerInventory.invYSize);
 	}
 
 	@Override
-	public void drawCenteredString(FontRenderer fontrenderer, String s, int i,
-			int j, int k) {
-		fontrenderer
-				.drawString(s, i - fontrenderer.getStringWidth(s) / 2, j, k);
+	public void drawCenteredString(FontRenderer fontrenderer, String s, int i, int j, int k) {
+		fontrenderer.drawString(s, i - fontrenderer.getStringWidth(s) / 2, j, k);
 	}
 
 	/**

@@ -29,39 +29,35 @@ public class SteamCraft {
 	public static CommonProxy proxy;
 
 	public static int blockHeaterRenderId;
-	
-	public static int blockTankRenderId;
-	
-	public static final Block blockHeater = new BlockSteelHeater(Material.iron)
-		.setHardness(0.5F).setStepSound(Block.soundMetalFootstep)
-		.setUnlocalizedName("Steel Heater")
-		.setCreativeTab(CreativeTabs.tabBlock);
 
-	public static final Block blockTank = new BlockSteelTank(Material.iron)
-		.setHardness(0.5F).setStepSound(Block.soundMetalFootstep)
-		.setUnlocalizedName("Steel Tank")
-		.setCreativeTab(CreativeTabs.tabBlock);
+	public static int blockTankRenderId;
+
+	public static final Block blockHeater = new BlockSteelHeater(Material.iron).setHardness(0.5F).setStepSound(Block.soundMetalFootstep).setUnlocalizedName("Steel Heater")
+			.setCreativeTab(CreativeTabs.tabBlock);
+
+	public static final Block blockTank = new BlockSteelTank(Material.iron).setHardness(0.5F).setStepSound(Block.soundMetalFootstep).setUnlocalizedName("Steel Tank")
+			.setCreativeTab(CreativeTabs.tabBlock);
 
 	@Mod.EventHandler
 	public void preInit(FMLPreInitializationEvent event) {
 		instance = this;
-		
+
 		TickRegistry.registerTickHandler(new ServerTickHandler(), Side.SERVER);
 		TickRegistry.registerTickHandler(new ClientTickHandler(), Side.CLIENT);
-		
+
 		proxy.registerBlocks();
 		proxy.registerEntities();
-		
+
 		SteamCraftItems.Setup();
 	}
 
 	@Mod.EventHandler
 	public void initialize(FMLInitializationEvent event) {
-		
+
 		Recipes.registerRecipes();
-		
+
 		proxy.registerGUI();
-		
+
 		proxy.registerRenderInformation();
 	}
 

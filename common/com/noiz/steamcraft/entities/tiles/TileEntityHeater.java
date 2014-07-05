@@ -1,5 +1,7 @@
 package com.noiz.steamcraft.entities.tiles;
 
+import com.noiz.steamcraft.handlers.client.GuiHandler;
+
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.Item;
@@ -149,7 +151,7 @@ public class TileEntityHeater extends TileEntity implements IInventory {
 			temperature += hasFuel ? TempIncrStep : -.8 * TempIncrStep;
 			double t = temperature;
 			temperature = Math.max(0, Math.min(temperature, MaxTemperature));
-			quantizedTemperature = (int) (temperature * 49 / MaxTemperature);
+			quantizedTemperature = (int) (temperature * GuiHandler.GUI_GaugeScale / MaxTemperature);
 			if (t != temperature)
 				updateInventory = true;
 			temperatureStepTime = TFC_Time.getTotalTicks() + TicksToTempIncr;

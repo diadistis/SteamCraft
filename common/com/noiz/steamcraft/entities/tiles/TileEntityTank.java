@@ -1,5 +1,7 @@
 package com.noiz.steamcraft.entities.tiles;
 
+import com.noiz.steamcraft.handlers.client.GuiHandler;
+
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.Packet132TileEntityData;
@@ -29,6 +31,10 @@ public class TileEntityTank extends TileEntity {
 	private float temperature = 0;
 	private long pressureNextUpdate = 0;
 
+	public int quantizedTemperature = 0;
+	public int quantizedWater = 0;
+	public int quantizedPressure = 0;
+
 	private int[] heaterLocation = null;
 
 	public boolean isFull() {
@@ -37,6 +43,9 @@ public class TileEntityTank extends TileEntity {
 
 	public void addBucket() {
 		waterAmount = Math.min(blockCount * CapacityPerBlock, waterAmount + LiquidPerBucket);
+
+		quantizedWater = (int) (waterAmount * GuiHandler.GUI_GaugeScale / (blockCount * CapacityPerBlock));
+		onInventoryChanged();
 	}
 
 	@Override
@@ -74,6 +83,10 @@ public class TileEntityTank extends TileEntity {
 			pressure = Math.min(MaxPressure, pressure + delta * PressureAmountFactor);
 		} finally {
 			if (p != pressure || w != waterAmount || t != temperature) {
+				quantizedTemperature = (int) (temperature * GuiHandler.GUI_GaugeScale / MaxTemperature);
+				quantizedWater = (int) (waterAmount * GuiHandler.GUI_GaugeScale / (blockCount * CapacityPerBlock));
+				quantizedPressure = (int) (pressure * GuiHandler.GUI_GaugeScale / MaxPressure);
+
 				worldObj.markBlockForUpdate(xCoord, yCoord, zCoord);
 				onInventoryChanged();
 			}
@@ -94,6 +107,10 @@ public class TileEntityTank extends TileEntity {
 			heaterLocation = par1nbtTagCompound.getIntArray("HeaterLoc");
 		else
 			heaterLocation = null;
+
+		quantizedTemperature = (int) (temperature * GuiHandler.GUI_GaugeScale / MaxTemperature);
+		quantizedWater = (int) (waterAmount * GuiHandler.GUI_GaugeScale / (blockCount * CapacityPerBlock));
+		quantizedPressure = (int) (pressure * GuiHandler.GUI_GaugeScale / MaxPressure);
 	}
 
 	@Override

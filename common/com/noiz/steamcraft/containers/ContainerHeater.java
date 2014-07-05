@@ -15,10 +15,10 @@ import cpw.mods.fml.relauncher.SideOnly;
 
 public class ContainerHeater extends Container {
 	private TileEntityHeater heater;
+	
 	private int quantizedTemperature;
 
-	public ContainerHeater(InventoryPlayer inventoryplayer, TileEntityHeater heater,
-			World world, int x, int y, int z) {
+	public ContainerHeater(InventoryPlayer inventoryplayer, TileEntityHeater heater, World world, int x, int y, int z) {
 
 		this.heater = heater;
 
@@ -34,23 +34,18 @@ public class ContainerHeater extends Container {
 	}
 
 	protected void bindPlayerInventory(InventoryPlayer inventoryPlayer) {
-		for (int i = 0; i < 3; i++) {
-			for (int j = 0; j < 9; j++) {
-				addSlotToContainer(new Slot(inventoryPlayer, j + i * 9 + 9,
-						7 + j * 18, 90 + i * 18));
-			}
-		}
+		for (int i = 0; i < 3; i++)
+			for (int j = 0; j < 9; j++)
+				addSlotToContainer(new Slot(inventoryPlayer, j + i * 9 + 9, 7 + j * 18, 90 + i * 18));
 
-		for (int i = 0; i < 9; i++) {
+		for (int i = 0; i < 9; i++)
 			addSlotToContainer(new Slot(inventoryPlayer, i, 7 + i * 18, 148));
-		}
 	}
 
 	@Override
 	public void addCraftingToCrafters(ICrafting par1iCrafting) {
 		super.addCraftingToCrafters(par1iCrafting);
-		par1iCrafting.sendProgressBarUpdate(this, 0,
-				heater.quantizedTemperature);
+		par1iCrafting.sendProgressBarUpdate(this, 0, heater.quantizedTemperature);
 	}
 
 	@Override
@@ -61,8 +56,7 @@ public class ContainerHeater extends Container {
 			ICrafting icrafting = (ICrafting) this.crafters.get(i);
 
 			if (quantizedTemperature != heater.quantizedTemperature)
-				icrafting.sendProgressBarUpdate(this, 0,
-						heater.quantizedTemperature);
+				icrafting.sendProgressBarUpdate(this, 0, heater.quantizedTemperature);
 		}
 
 		quantizedTemperature = heater.quantizedTemperature;
@@ -71,7 +65,7 @@ public class ContainerHeater extends Container {
 	@SideOnly(Side.CLIENT)
 	public void updateProgressBar(int par1, int par2) {
 		if (par1 == 0)
-			this.heater.quantizedTemperature = par2;
+			heater.quantizedTemperature = par2;
 	}
 
 	@Override
@@ -79,14 +73,11 @@ public class ContainerHeater extends Container {
 		Slot userSlot = (Slot) inventorySlots.get(slot);
 		Slot heaterSlot = getSlot(TileEntityHeater.FuelSlot);
 
-		if (userSlot == null || heaterSlot == null || !userSlot.getHasStack()
-				|| userSlot.getStack().stackSize == 0
-				|| !heaterSlot.isItemValid(userSlot.getStack()))
+		if (userSlot == null || heaterSlot == null || !userSlot.getHasStack() || userSlot.getStack().stackSize == 0 || !heaterSlot.isItemValid(userSlot.getStack()))
 			return null;
 
 		if (!heaterSlot.getHasStack()) {
-			heaterSlot.putStack(userSlot.decrStackSize(Math.min(64,
-					userSlot.getStack().stackSize)));
+			heaterSlot.putStack(userSlot.decrStackSize(Math.min(64, userSlot.getStack().stackSize)));
 			return null;
 		}
 

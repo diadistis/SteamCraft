@@ -5,7 +5,9 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
 
 import com.noiz.steamcraft.containers.ContainerHeater;
+import com.noiz.steamcraft.containers.ContainerTank;
 import com.noiz.steamcraft.entities.tiles.TileEntityHeater;
+import com.noiz.steamcraft.entities.tiles.TileEntityTank;
 
 import cpw.mods.fml.common.network.IGuiHandler;
 
@@ -21,6 +23,8 @@ public class GuiHandlerServer implements IGuiHandler {
 		switch (ID) {
 		case GUI_HeaterID:
 			return new ContainerHeater(player.inventory, ((TileEntityHeater) te), world, x, y, z);
+		case GUI_TankID:
+			return new ContainerTank(player.inventory, ((TileEntityTank) te), world, x, y, z);
 		}
 		return null;
 	}
