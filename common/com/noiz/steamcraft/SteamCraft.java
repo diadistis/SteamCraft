@@ -5,6 +5,7 @@ import net.minecraft.block.material.Material;
 import net.minecraft.creativetab.CreativeTabs;
 
 import com.noiz.steamcraft.blocks.BlockBoiler;
+import com.noiz.steamcraft.blocks.BlockBoilerTank;
 import com.noiz.steamcraft.handlers.ServerTickHandler;
 import com.noiz.steamcraft.handlers.client.ClientTickHandler;
 import com.noiz.steamcraft.proxy.CommonProxy;
@@ -27,10 +28,15 @@ public class SteamCraft {
 	@SidedProxy(clientSide = "com.noiz.steamcraft.proxy.ClientProxy", serverSide = "com.noiz.steamcraft.proxy.ServerProxy")
 	public static CommonProxy proxy;
 
-	public static final Block blockTest = new BlockBoiler(Material.iron)
-			.setHardness(0.5F).setStepSound(Block.soundGravelFootstep)
-			.setUnlocalizedName("testBlock")
-			.setCreativeTab(CreativeTabs.tabBlock);
+	public static final Block blockBoiler = new BlockBoiler(Material.iron)
+		.setHardness(0.5F).setStepSound(Block.soundMetalFootstep)
+		.setUnlocalizedName("Boiler")
+		.setCreativeTab(CreativeTabs.tabBlock);
+
+	public static final Block blockBoilerTank = new BlockBoilerTank(Material.iron)
+		.setHardness(0.5F).setStepSound(Block.soundMetalFootstep)
+		.setUnlocalizedName("Boiler Tank")
+		.setCreativeTab(CreativeTabs.tabBlock);
 
 	@Mod.EventHandler
 	public void preInit(FMLPreInitializationEvent event) {

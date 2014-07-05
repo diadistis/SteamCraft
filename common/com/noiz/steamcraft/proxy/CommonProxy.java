@@ -8,7 +8,8 @@ import cpw.mods.fml.common.registry.GameRegistry;
 public abstract class CommonProxy {
 
 	public void registerBlocks() {
-		GameRegistry.registerBlock(SteamCraft.blockTest, "testBlock");
+		GameRegistry.registerBlock(SteamCraft.blockBoiler, "BoilerBlock");
+		GameRegistry.registerBlock(SteamCraft.blockBoilerTank, "BoilerTankBlock");
 	}
 
 	public void registerEntities() {
