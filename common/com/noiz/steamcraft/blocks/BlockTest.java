@@ -1,6 +1,6 @@
 package com.noiz.steamcraft.blocks;
 
-import net.minecraft.block.Block;
+import net.minecraft.block.BlockContainer;
 import net.minecraft.block.ITileEntityProvider;
 import net.minecraft.block.material.Material;
 import net.minecraft.entity.player.EntityPlayer;
@@ -9,8 +9,9 @@ import net.minecraft.world.World;
 
 import com.noiz.steamcraft.SteamCraft;
 import com.noiz.steamcraft.entities.tiles.TEBoiler;
+import com.noiz.steamcraft.gui.GuiHandlerServer;
 
-public class BlockTest extends Block implements ITileEntityProvider {
+public class BlockTest extends BlockContainer implements ITileEntityProvider {
 
 	public BlockTest(Material material) {
 		super(1234, material);
@@ -33,7 +34,7 @@ public class BlockTest extends Block implements ITileEntityProvider {
 			// TEBoiler boiler = (TEBoiler) world.getBlockTileEntity(i, j, k);
 			// ItemStack is = entityplayer.getCurrentEquippedItem();
 
-			entityplayer.openGui(SteamCraft.instance, 21, world, i, j, k);
+			entityplayer.openGui(SteamCraft.instance, GuiHandlerServer.GUI_BoilerID, world, i, j, k);
 		}
 		return true;
 	}
