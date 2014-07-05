@@ -45,8 +45,8 @@ public class GuiBoiler extends GuiContainer {
 		int h = (height - ySize) / 2;
 		drawTexturedModalRect(w, h, 0, 0, xSize, ySize);
 
-		int t = boiler.getTemperatureScaled(49);
-		drawTexturedModalRect(w + 8, h + 64 - t, 185, 31, 15, 6);
+		drawTexturedModalRect(w + 8, h + 64 - boiler.quantizedTemperature, 185,
+				31, 15, 6);
 
 		PlayerInventory.drawInventory(this, width, height, ySize
 				- PlayerInventory.invYSize);

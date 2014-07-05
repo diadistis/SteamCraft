@@ -3,15 +3,24 @@ package com.noiz.steamcraft.containers;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.Container;
+import net.minecraft.inventory.ICrafting;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
 
 import com.noiz.steamcraft.entities.tiles.TEBoiler;
 
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
+
 public class ContainerBoiler extends Container {
+	private TEBoiler boiler;
+	private int quantizedTemperature;
+
 	public ContainerBoiler(InventoryPlayer inventoryplayer, TEBoiler boiler,
 			World world, int x, int y, int z) {
+
+		this.boiler = boiler;
 
 		addSlotToContainer(new CoalFuelSlot(boiler, 0, 84, 25));
 		addSlotToContainer(new OutputOnlySlot(boiler, 1, 84, 46));
@@ -35,6 +44,34 @@ public class ContainerBoiler extends Container {
 		for (int i = 0; i < 9; i++) {
 			addSlotToContainer(new Slot(inventoryPlayer, i, 7 + i * 18, 148));
 		}
+	}
+
+	@Override
+	public void addCraftingToCrafters(ICrafting par1iCrafting) {
+		super.addCraftingToCrafters(par1iCrafting);
+		par1iCrafting.sendProgressBarUpdate(this, 0,
+				boiler.quantizedTemperature);
+	}
+
+	@Override
+	public void detectAndSendChanges() {
+		super.detectAndSendChanges();
+
+		for (int i = 0; i < this.crafters.size(); ++i) {
+			ICrafting icrafting = (ICrafting) this.crafters.get(i);
+
+			if (quantizedTemperature != boiler.quantizedTemperature)
+				icrafting.sendProgressBarUpdate(this, 0,
+						boiler.quantizedTemperature);
+		}
+
+		quantizedTemperature = boiler.quantizedTemperature;
+	}
+
+	@SideOnly(Side.CLIENT)
+	public void updateProgressBar(int par1, int par2) {
+		if (par1 == 0)
+			this.boiler.quantizedTemperature = par2;
 	}
 
 	@Override

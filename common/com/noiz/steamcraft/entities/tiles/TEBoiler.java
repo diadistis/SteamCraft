@@ -30,6 +30,7 @@ public class TEBoiler extends TileEntity implements IInventory {
 	private long fuelExpirationTime = 0;
 	private long temperatureStepTime = 0;
 	private float temperature = 0;
+	public int quantizedTemperature = 0;
 
 	@Override
 	public int getSizeInventory() {
@@ -115,7 +116,7 @@ public class TEBoiler extends TileEntity implements IInventory {
 
 	@Override
 	public void updateEntity() {
-		if (!worldObj.isRemote) //
+		if (worldObj.isRemote)
 			return;
 
 		if (TFC_Time.getTotalTicks() > fuelExpirationTime)
@@ -146,13 +147,18 @@ public class TEBoiler extends TileEntity implements IInventory {
 			temperature += hasFuel ? TempIncrStep : -.8 * TempIncrStep;
 			double t = temperature;
 			temperature = Math.max(0, Math.min(temperature, MaxTemperature));
+			quantizedTemperature = (int) (temperature * 49 / MaxTemperature);
 			if (t != temperature)
 				updateInventory = true;
 			temperatureStepTime = TFC_Time.getTotalTicks() + TicksToTempIncr;
 		}
 
-		if (updateInventory)
+		if (updateInventory) {
+			worldObj.markBlockForUpdate(xCoord, yCoord, zCoord);
 			onInventoryChanged();
+		}
+
+		updateFireIcon();
 	}
 
 	private void updateFireIcon() {
@@ -161,10 +167,6 @@ public class TEBoiler extends TileEntity implements IInventory {
 
 		metadata = side | (temperature > 0 ? 8 : 0);
 		worldObj.setBlockMetadataWithNotify(xCoord, yCoord, zCoord, metadata, 3);
-	}
-
-	public int getTemperatureScaled(int s) {
-		return (int) (temperature * s / MaxTemperature);
 	}
 
 	@Override
