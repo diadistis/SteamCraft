@@ -5,7 +5,7 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
 
 import com.noiz.steamcraft.containers.ContainerHeater;
-import com.noiz.steamcraft.entities.tiles.TEHeater;
+import com.noiz.steamcraft.entities.tiles.TileEntityHeater;
 
 import cpw.mods.fml.common.network.IGuiHandler;
 
@@ -20,7 +20,7 @@ public class GuiHandlerServer implements IGuiHandler {
 		TileEntity te = world.getBlockTileEntity(x, y, z);
 		switch (ID) {
 		case GUI_SteelHeaterID:
-			return new ContainerHeater(player.inventory, ((TEHeater) te),
+			return new ContainerHeater(player.inventory, ((TileEntityHeater) te),
 					world, x, y, z);
 		}
 		return null;

@@ -14,7 +14,7 @@ import net.minecraft.world.World;
 
 import com.noiz.steamcraft.SteamCraft;
 import com.noiz.steamcraft.SteamCraftConstants;
-import com.noiz.steamcraft.entities.tiles.TEHeater;
+import com.noiz.steamcraft.entities.tiles.TileEntityHeater;
 import com.noiz.steamcraft.handlers.GuiHandlerServer;
 
 import cpw.mods.fml.relauncher.Side;
@@ -38,7 +38,7 @@ public class BlockSteelHeater extends BlockContainer implements ITileEntityProvi
 
 	@Override
 	public TileEntity createNewTileEntity(World world) {
-		return new TEHeater();
+		return new TileEntityHeater();
 	}
 	
 	@Override
@@ -103,7 +103,7 @@ public class BlockSteelHeater extends BlockContainer implements ITileEntityProvi
 		if (world.isRemote) //
 			return true;
 
-		if ((TEHeater) world.getBlockTileEntity(i, j, k) != null)
+		if ((TileEntityHeater) world.getBlockTileEntity(i, j, k) != null)
 			entityplayer.openGui(SteamCraft.instance, GuiHandlerServer.GUI_SteelHeaterID, world, i, j, k);
 		return true;
 	}

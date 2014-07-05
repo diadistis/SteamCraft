@@ -5,7 +5,7 @@ import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.Packet132TileEntityData;
 import net.minecraft.tileentity.TileEntity;
 
-public class TETank extends TileEntity {
+public class TileEntityTank extends TileEntity {
 
 	private int blockCount = 1;
 	private float waterAmount = 0;

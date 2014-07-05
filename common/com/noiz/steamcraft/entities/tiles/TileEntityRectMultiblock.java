@@ -3,7 +3,7 @@ package com.noiz.steamcraft.entities.tiles;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 
-public abstract class RectMultiblockTileEntity extends TileEntity {
+public abstract class TileEntityRectMultiblock extends TileEntity {
 
 	/** X-axis */
 	protected final int maxWidth;
@@ -12,7 +12,7 @@ public abstract class RectMultiblockTileEntity extends TileEntity {
 	/** Z-axis */
 	protected final int maxLength;
 
-	public RectMultiblockTileEntity(int maxWidth, int maxHeight, int maxLength) {
+	public TileEntityRectMultiblock(int maxWidth, int maxHeight, int maxLength) {
 		this.maxWidth = maxWidth;
 		this.maxHeight = maxHeight;
 		this.maxLength = maxLength;

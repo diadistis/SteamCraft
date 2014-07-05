@@ -9,7 +9,7 @@ import net.minecraft.util.Icon;
 import net.minecraft.world.World;
 
 import com.noiz.steamcraft.SteamCraftConstants;
-import com.noiz.steamcraft.entities.tiles.TETank;
+import com.noiz.steamcraft.entities.tiles.TileEntityTank;
 
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
@@ -27,7 +27,7 @@ public class BlockSteelTank extends Block implements ITileEntityProvider {
 
 	@Override
 	public TileEntity createNewTileEntity(World world) {
-		return new TETank();
+		return new TileEntityTank();
 	}
 
 	@Override

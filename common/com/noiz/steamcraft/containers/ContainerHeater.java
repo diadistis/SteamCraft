@@ -8,16 +8,16 @@ import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
 
-import com.noiz.steamcraft.entities.tiles.TEHeater;
+import com.noiz.steamcraft.entities.tiles.TileEntityHeater;
 
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
 public class ContainerHeater extends Container {
-	private TEHeater heater;
+	private TileEntityHeater heater;
 	private int quantizedTemperature;
 
-	public ContainerHeater(InventoryPlayer inventoryplayer, TEHeater heater,
+	public ContainerHeater(InventoryPlayer inventoryplayer, TileEntityHeater heater,
 			World world, int x, int y, int z) {
 
 		this.heater = heater;
@@ -77,7 +77,7 @@ public class ContainerHeater extends Container {
 	@Override
 	public ItemStack transferStackInSlot(EntityPlayer entityPlayer, int slot) {
 		Slot userSlot = (Slot) inventorySlots.get(slot);
-		Slot heaterSlot = getSlot(TEHeater.FuelSlot);
+		Slot heaterSlot = getSlot(TileEntityHeater.FuelSlot);
 
 		if (userSlot == null || heaterSlot == null || !userSlot.getHasStack()
 				|| userSlot.getStack().stackSize == 0

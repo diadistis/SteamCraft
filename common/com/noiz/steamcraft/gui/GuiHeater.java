@@ -12,13 +12,13 @@ import TFC.Core.TFC_Core;
 import TFC.Core.Player.PlayerInventory;
 
 import com.noiz.steamcraft.containers.ContainerHeater;
-import com.noiz.steamcraft.entities.tiles.TEHeater;
+import com.noiz.steamcraft.entities.tiles.TileEntityHeater;
 
 public class GuiHeater extends GuiContainer {
 
-	private TEHeater heater;
+	private TileEntityHeater heater;
 
-	public GuiHeater(InventoryPlayer player, TEHeater heater, World world,
+	public GuiHeater(InventoryPlayer player, TileEntityHeater heater, World world,
 			int x, int y, int z) {
 		super(new ContainerHeater(player, heater, world, x, y, z));
 
