@@ -4,7 +4,7 @@ import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.creativetab.CreativeTabs;
 
-import com.noiz.steamcraft.blocks.BlockTest;
+import com.noiz.steamcraft.blocks.BlockBoiler;
 import com.noiz.steamcraft.proxy.CommonProxy;
 
 import cpw.mods.fml.common.Mod;
@@ -23,7 +23,7 @@ public class SteamCraft {
 	@SidedProxy(clientSide = "com.noiz.steamcraft.proxy.ClientProxy", serverSide = "com.noiz.steamcraft.proxy.ServerProxy")
 	public static CommonProxy proxy;
 
-	public static final Block blockTest = new BlockTest(Material.ground)
+	public static final Block blockTest = new BlockBoiler(Material.ground)
 			.setHardness(0.5F).setStepSound(Block.soundGravelFootstep)
 			.setUnlocalizedName("testBlock")
 			.setCreativeTab(CreativeTabs.tabBlock);
