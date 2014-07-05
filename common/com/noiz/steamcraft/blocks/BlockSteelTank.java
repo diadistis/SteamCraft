@@ -7,7 +7,9 @@ import net.minecraft.client.renderer.texture.IconRegister;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.Icon;
 import net.minecraft.world.World;
+import net.minecraftforge.common.ForgeDirection;
 
+import com.noiz.steamcraft.SteamCraft;
 import com.noiz.steamcraft.SteamCraftConstants;
 import com.noiz.steamcraft.entities.tiles.TileEntityTank;
 
@@ -41,6 +43,11 @@ public class BlockSteelTank extends Block implements ITileEntityProvider {
 	}
 
 	@Override
+	public int getRenderType() {		
+		return SteamCraft.blockTankRenderId;
+	}
+	
+	@Override
 	@SideOnly(Side.CLIENT)
 	public void registerIcons(IconRegister icon) {
 		BlockSteelTank.icon = icon.registerIcon(SteamCraftConstants.ModId
@@ -51,5 +58,9 @@ public class BlockSteelTank extends Block implements ITileEntityProvider {
 	@SideOnly(Side.CLIENT)
 	public Icon getIcon(int side, int metadata) {
 		return icon;
+	}
+
+	public ForgeDirection[] getConnectedSides() {
+		return new ForgeDirection[0];
 	}
 }

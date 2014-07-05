@@ -30,6 +30,8 @@ public class SteamCraft {
 
 	public static int blockHeaterRenderId;
 	
+	public static int blockTankRenderId;
+	
 	public static final Block blockHeater = new BlockSteelHeater(Material.iron)
 		.setHardness(0.5F).setStepSound(Block.soundMetalFootstep)
 		.setUnlocalizedName("Steel Heater")
