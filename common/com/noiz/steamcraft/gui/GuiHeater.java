@@ -11,18 +11,18 @@ import org.lwjgl.opengl.GL11;
 import TFC.Core.TFC_Core;
 import TFC.Core.Player.PlayerInventory;
 
-import com.noiz.steamcraft.containers.ContainerBoiler;
-import com.noiz.steamcraft.entities.tiles.TEBoiler;
+import com.noiz.steamcraft.containers.ContainerHeater;
+import com.noiz.steamcraft.entities.tiles.TEHeater;
 
-public class GuiBoiler extends GuiContainer {
+public class GuiHeater extends GuiContainer {
 
-	private TEBoiler boiler;
+	private TEHeater heater;
 
-	public GuiBoiler(InventoryPlayer player, TEBoiler boiler, World world,
+	public GuiHeater(InventoryPlayer player, TEHeater heater, World world,
 			int x, int y, int z) {
-		super(new ContainerBoiler(player, boiler, world, x, y, z));
+		super(new ContainerHeater(player, heater, world, x, y, z));
 
-		this.boiler = boiler;
+		this.heater = heater;
 		xSize = 175;
 		ySize = 85 + PlayerInventory.invYSize;
 	}
@@ -39,13 +39,13 @@ public class GuiBoiler extends GuiContainer {
 	@Override
 	protected void drawGuiContainerBackgroundLayer(float f, int i, int j) {
 		TFC_Core.bindTexture(new ResourceLocation(
-				"steamcraft:textures/gui/gui_boiler.png"));
+				"steamcraft:textures/gui/gui_heater.png"));
 		GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
 		int w = (width - xSize) / 2;
 		int h = (height - ySize) / 2;
 		drawTexturedModalRect(w, h, 0, 0, xSize, ySize);
 
-		drawTexturedModalRect(w + 8, h + 64 - boiler.quantizedTemperature, 185,
+		drawTexturedModalRect(w + 8, h + 64 - heater.quantizedTemperature, 185,
 				31, 15, 6);
 
 		PlayerInventory.drawInventory(this, width, height, ySize

@@ -8,22 +8,22 @@ import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
 
-import com.noiz.steamcraft.entities.tiles.TEBoiler;
+import com.noiz.steamcraft.entities.tiles.TEHeater;
 
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
-public class ContainerBoiler extends Container {
-	private TEBoiler boiler;
+public class ContainerHeater extends Container {
+	private TEHeater heater;
 	private int quantizedTemperature;
 
-	public ContainerBoiler(InventoryPlayer inventoryplayer, TEBoiler boiler,
+	public ContainerHeater(InventoryPlayer inventoryplayer, TEHeater heater,
 			World world, int x, int y, int z) {
 
-		this.boiler = boiler;
+		this.heater = heater;
 
-		addSlotToContainer(new CoalFuelSlot(boiler, 0, 84, 25));
-		addSlotToContainer(new OutputOnlySlot(boiler, 1, 84, 46));
+		addSlotToContainer(new CoalFuelSlot(heater, 0, 84, 25));
+		addSlotToContainer(new OutputOnlySlot(heater, 1, 84, 46));
 
 		bindPlayerInventory(inventoryplayer);
 	}
@@ -50,7 +50,7 @@ public class ContainerBoiler extends Container {
 	public void addCraftingToCrafters(ICrafting par1iCrafting) {
 		super.addCraftingToCrafters(par1iCrafting);
 		par1iCrafting.sendProgressBarUpdate(this, 0,
-				boiler.quantizedTemperature);
+				heater.quantizedTemperature);
 	}
 
 	@Override
@@ -60,47 +60,47 @@ public class ContainerBoiler extends Container {
 		for (int i = 0; i < this.crafters.size(); ++i) {
 			ICrafting icrafting = (ICrafting) this.crafters.get(i);
 
-			if (quantizedTemperature != boiler.quantizedTemperature)
+			if (quantizedTemperature != heater.quantizedTemperature)
 				icrafting.sendProgressBarUpdate(this, 0,
-						boiler.quantizedTemperature);
+						heater.quantizedTemperature);
 		}
 
-		quantizedTemperature = boiler.quantizedTemperature;
+		quantizedTemperature = heater.quantizedTemperature;
 	}
 
 	@SideOnly(Side.CLIENT)
 	public void updateProgressBar(int par1, int par2) {
 		if (par1 == 0)
-			this.boiler.quantizedTemperature = par2;
+			this.heater.quantizedTemperature = par2;
 	}
 
 	@Override
 	public ItemStack transferStackInSlot(EntityPlayer entityPlayer, int slot) {
 		Slot userSlot = (Slot) inventorySlots.get(slot);
-		Slot boilerSlot = getSlot(TEBoiler.FuelSlot);
+		Slot heaterSlot = getSlot(TEHeater.FuelSlot);
 
-		if (userSlot == null || boilerSlot == null || !userSlot.getHasStack()
+		if (userSlot == null || heaterSlot == null || !userSlot.getHasStack()
 				|| userSlot.getStack().stackSize == 0
-				|| !boilerSlot.isItemValid(userSlot.getStack()))
+				|| !heaterSlot.isItemValid(userSlot.getStack()))
 			return null;
 
-		if (!boilerSlot.getHasStack()) {
-			boilerSlot.putStack(userSlot.decrStackSize(Math.min(64,
+		if (!heaterSlot.getHasStack()) {
+			heaterSlot.putStack(userSlot.decrStackSize(Math.min(64,
 					userSlot.getStack().stackSize)));
 			return null;
 		}
 
-		if (boilerSlot.getStack().isItemEqual(userSlot.getStack())) {
-			int max = 64 - boilerSlot.getStack().stackSize;
+		if (heaterSlot.getStack().isItemEqual(userSlot.getStack())) {
+			int max = 64 - heaterSlot.getStack().stackSize;
 			int delta = Math.min(max, userSlot.getStack().stackSize);
 
-			boilerSlot.getStack().stackSize += delta;
+			heaterSlot.getStack().stackSize += delta;
 			userSlot.getStack().stackSize -= delta;
 
 			if (userSlot.getStack().stackSize == 0)
 				userSlot.putStack(null);
 
-			boilerSlot.onSlotChanged();
+			heaterSlot.onSlotChanged();
 			userSlot.onSlotChanged();
 		}
 

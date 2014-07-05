@@ -6,21 +6,22 @@ import net.minecraft.util.Icon;
 
 import com.noiz.steamcraft.SteamCraftConstants;
 
-public class ItemBoilerHatch extends Item{
+public class ItemHatch extends Item {
 
 	Icon icon;
-	
-	public ItemBoilerHatch(int i) {
+
+	public ItemHatch(int i) {
 		super(i);
 	}
-	
+
 	@Override
 	public Icon getIconFromDamage(int par1) {
 		return icon;
 	}
-	
+
 	@Override
 	public void registerIcons(IconRegister registerer) {
-		icon = registerer.registerIcon(SteamCraftConstants.ModId + ":" + "boiler_hatch");
+		icon = registerer.registerIcon(SteamCraftConstants.ModId + ":"
+				+ "hatch");
 	}
 }

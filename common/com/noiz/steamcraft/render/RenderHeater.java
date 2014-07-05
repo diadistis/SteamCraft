@@ -8,9 +8,9 @@ import com.noiz.steamcraft.SteamCraft;
 
 import cpw.mods.fml.client.registry.ISimpleBlockRenderingHandler;
 
-public class RenderBoiler implements ISimpleBlockRenderingHandler {
+public class RenderHeater implements ISimpleBlockRenderingHandler {
 
-	public static boolean renderBoiler(Block block, int i, int j, int k, RenderBlocks renderblocks)
+	public static boolean renderHeater(Block block, int i, int j, int k, RenderBlocks renderblocks)
 	{
 		renderblocks.setRenderBounds(1.0F/8.0F, 0.0F, 1.0F/8.0F, 1.0F - (1.0F/8.0F), 1.0F, 1.0F - (1.0F/8.0F));
 		renderblocks.renderStandardBlock(block, i, j, k);
@@ -32,9 +32,9 @@ public class RenderBoiler implements ISimpleBlockRenderingHandler {
 	@Override
 	public boolean renderWorldBlock(IBlockAccess world, int x, int y, int z,
 			Block block, int modelId, RenderBlocks renderer) {
-		if(modelId == SteamCraft.blockBoilerRenderId)
+		if(modelId == SteamCraft.blockHeaterRenderId)
 		{
-			return renderBoiler(block, x, y, z, renderer);
+			return renderHeater(block, x, y, z, renderer);
 		}
 		return false;
 	}
@@ -50,5 +50,4 @@ public class RenderBoiler implements ISimpleBlockRenderingHandler {
 		// TODO Auto-generated method stub
 		return 0;
 	}
-
 }

@@ -4,14 +4,14 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
 
-import com.noiz.steamcraft.containers.ContainerBoiler;
-import com.noiz.steamcraft.entities.tiles.TEBoiler;
+import com.noiz.steamcraft.containers.ContainerHeater;
+import com.noiz.steamcraft.entities.tiles.TEHeater;
 
 import cpw.mods.fml.common.network.IGuiHandler;
 
 public class GuiHandlerServer implements IGuiHandler {
 
-	public static final int GUI_BoilerID = 12;
+	public static final int GUI_SteelHeaterID = 12;
 
 	@Override
 	public Object getServerGuiElement(int ID, EntityPlayer player, World world,
@@ -19,8 +19,8 @@ public class GuiHandlerServer implements IGuiHandler {
 
 		TileEntity te = world.getBlockTileEntity(x, y, z);
 		switch (ID) {
-		case GUI_BoilerID:
-			return new ContainerBoiler(player.inventory, ((TEBoiler) te),
+		case GUI_SteelHeaterID:
+			return new ContainerHeater(player.inventory, ((TEHeater) te),
 					world, x, y, z);
 		}
 		return null;

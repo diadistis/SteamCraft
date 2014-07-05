@@ -19,6 +19,6 @@ public class ClientProxy extends CommonProxy {
 
 	@Override
 	public void registerRenderInformation() {
-		RenderingRegistry.registerBlockHandler(SteamCraft.blockBoilerRenderId = RenderingRegistry.getNextAvailableRenderId(), new BlockRenderHandler());		
+		RenderingRegistry.registerBlockHandler(SteamCraft.blockHeaterRenderId = RenderingRegistry.getNextAvailableRenderId(), new BlockRenderHandler());		
 	}
 }

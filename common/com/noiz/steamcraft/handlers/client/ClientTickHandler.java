@@ -30,5 +30,4 @@ public class ClientTickHandler implements ITickHandler {
 		// TODO Auto-generated method stub
 		return null;
 	}
-
 }

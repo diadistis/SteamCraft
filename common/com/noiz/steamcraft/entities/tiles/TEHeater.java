@@ -12,7 +12,7 @@ import net.minecraft.tileentity.TileEntity;
 import TFC.API.Constant.TFCBlockID;
 import TFC.Core.TFC_Time;
 
-public class TEBoiler extends TileEntity implements IInventory {
+public class TEHeater extends TileEntity implements IInventory {
 
 	public static final int AshItemId = TFCBlockID.Dirt;
 

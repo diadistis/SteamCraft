@@ -10,8 +10,8 @@ import net.minecraftforge.event.ForgeSubscribe;
 
 import TFC.GUI.GuiInventoryTFC;
 
-import com.noiz.steamcraft.entities.tiles.TEBoiler;
-import com.noiz.steamcraft.gui.GuiBoiler;
+import com.noiz.steamcraft.entities.tiles.TEHeater;
+import com.noiz.steamcraft.gui.GuiHeater;
 import com.noiz.steamcraft.handlers.GuiHandlerServer;
 
 public class GuiHandler extends GuiHandlerServer {
@@ -22,8 +22,8 @@ public class GuiHandler extends GuiHandlerServer {
 		
 		TileEntity te = world.getBlockTileEntity(x, y, z);
 		switch (ID) {
-		case GUI_BoilerID:
-			return new GuiBoiler(player.inventory, ((TEBoiler) te), world, x,
+		case GUI_SteelHeaterID:
+			return new GuiHeater(player.inventory, ((TEHeater) te), world, x,
 					y, z);
 		}
 		return null;

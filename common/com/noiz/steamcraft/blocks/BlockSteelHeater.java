@@ -14,13 +14,13 @@ import net.minecraft.world.World;
 
 import com.noiz.steamcraft.SteamCraft;
 import com.noiz.steamcraft.SteamCraftConstants;
-import com.noiz.steamcraft.entities.tiles.TEBoiler;
+import com.noiz.steamcraft.entities.tiles.TEHeater;
 import com.noiz.steamcraft.handlers.GuiHandlerServer;
 
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
-public class BlockBoiler extends BlockContainer implements ITileEntityProvider {
+public class BlockSteelHeater extends BlockContainer implements ITileEntityProvider {
 
 	@SideOnly(Side.CLIENT)
 	public static Icon frontOffIcon;
@@ -31,14 +31,14 @@ public class BlockBoiler extends BlockContainer implements ITileEntityProvider {
 	@SideOnly(Side.CLIENT)
 	public static Icon sideIcon;
 	
-	public BlockBoiler(Material material) {
+	public BlockSteelHeater(Material material) {
 		super(1234, material);
 		setBlockBounds(1.0F/16.0F, 0.0F, 1.0F/16.0F, 1.0F - (1.0F/16.0F), 1.0F, 1.0F - (1.0F/16.0F));
 	}
 
 	@Override
 	public TileEntity createNewTileEntity(World world) {
-		return new TEBoiler();
+		return new TEHeater();
 	}
 	
 	@Override
@@ -53,7 +53,7 @@ public class BlockBoiler extends BlockContainer implements ITileEntityProvider {
 	
 	@Override
 	public int getRenderType() {		
-		return SteamCraft.blockBoilerRenderId;
+		return SteamCraft.blockHeaterRenderId;
 	}
 	
 	@Override
@@ -73,9 +73,9 @@ public class BlockBoiler extends BlockContainer implements ITileEntityProvider {
 	@SideOnly(Side.CLIENT)
 	public void registerIcons(IconRegister icon) 
 	{
-		frontOffIcon = icon.registerIcon(SteamCraftConstants.ModId.toLowerCase() + ":boiler_off");
-		frontOnIcon = icon.registerIcon(SteamCraftConstants.ModId.toLowerCase() + ":boiler_on");
-		sideIcon = icon.registerIcon(SteamCraftConstants.ModId.toLowerCase() + ":boiler_sides");
+		frontOffIcon = icon.registerIcon(SteamCraftConstants.ModId.toLowerCase() + ":heater_off");
+		frontOnIcon = icon.registerIcon(SteamCraftConstants.ModId.toLowerCase() + ":heater_on");
+		sideIcon = icon.registerIcon(SteamCraftConstants.ModId.toLowerCase() + ":heater_sides");
 	};
 
     public void onBlockPlacedBy(World world, int i, int j, int k, EntityLivingBase entityliving, ItemStack par6ItemStack)
@@ -103,8 +103,8 @@ public class BlockBoiler extends BlockContainer implements ITileEntityProvider {
 		if (world.isRemote) //
 			return true;
 
-		if ((TEBoiler) world.getBlockTileEntity(i, j, k) != null)
-			entityplayer.openGui(SteamCraft.instance, GuiHandlerServer.GUI_BoilerID, world, i, j, k);
+		if ((TEHeater) world.getBlockTileEntity(i, j, k) != null)
+			entityplayer.openGui(SteamCraft.instance, GuiHandlerServer.GUI_SteelHeaterID, world, i, j, k);
 		return true;
 	}
 }

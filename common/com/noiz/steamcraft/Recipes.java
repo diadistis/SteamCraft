@@ -16,8 +16,8 @@ public class Recipes
 {
 	public static void registerRecipes()
 	{
-		GameRegistry.addRecipe(new ItemStack(SteamCraft.blockBoiler, 1), new Object[] { "PPP","PCP","PPP", Character.valueOf('P'), new ItemStack(TFCItems.SteelSheet2x, 1),Character.valueOf('C'), new ItemStack(SteamCraftItems.BoilerHatch, 1)});
-		GameRegistry.addRecipe(new ItemStack(SteamCraft.blockBoilerTank, 1), new Object[] { "PPP","P P","PPP", Character.valueOf('P'), new ItemStack(TFCItems.SteelSheet2x, 1)});
+		GameRegistry.addRecipe(new ItemStack(SteamCraft.blockHeater, 1), new Object[] { "PPP","PCP","PPP", Character.valueOf('P'), new ItemStack(TFCItems.SteelSheet2x, 1),Character.valueOf('C'), new ItemStack(SteamCraftItems.Hatch, 1)});
+		GameRegistry.addRecipe(new ItemStack(SteamCraft.blockTank, 1), new Object[] { "PPP","P P","PPP", Character.valueOf('P'), new ItemStack(TFCItems.SteelSheet2x, 1)});
 	}
 	
 	public static void registerAnvilRecipes(Random R, World world)
@@ -26,9 +26,9 @@ public class Recipes
 		
 		AnvilManager manager = AnvilManager.getInstance();
 		
-		manager.addPlan("boilerhatch", new PlanRecipe(
+		manager.addPlan("hatch", new PlanRecipe(
 				new RuleEnum[] {RuleEnum.HITLAST, RuleEnum.HITSECONDFROMLAST, RuleEnum.HITTHIRDFROMLAST}));
 
-		manager.addRecipe(new AnvilRecipe(new ItemStack(TFCItems.SteelSheet2x), null, "boilerhatch", false, AnvilReq.STEEL, new ItemStack(SteamCraftItems.BoilerHatch)));
+		manager.addRecipe(new AnvilRecipe(new ItemStack(TFCItems.SteelSheet2x), null, "hatch", false, AnvilReq.STEEL, new ItemStack(SteamCraftItems.Hatch)));
 	}
 }

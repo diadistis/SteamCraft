@@ -5,7 +5,7 @@ import net.minecraft.client.renderer.RenderBlocks;
 import net.minecraft.world.IBlockAccess;
 
 import com.noiz.steamcraft.SteamCraft;
-import com.noiz.steamcraft.render.RenderBoiler;
+import com.noiz.steamcraft.render.RenderHeater;
 
 import cpw.mods.fml.client.registry.ISimpleBlockRenderingHandler;
 
@@ -20,9 +20,9 @@ public class BlockRenderHandler implements ISimpleBlockRenderingHandler {
 	public boolean renderWorldBlock(IBlockAccess world, int x, int y, int z,
 			Block block, int modelId, RenderBlocks renderer) {
 
-		if (modelId == SteamCraft.blockBoilerRenderId)
+		if (modelId == SteamCraft.blockHeaterRenderId)
 		{
-			return RenderBoiler.renderBoiler(block, x, y, z, renderer);
+			return RenderHeater.renderHeater(block, x, y, z, renderer);
 		}
 		
 		return false;
@@ -37,5 +37,4 @@ public class BlockRenderHandler implements ISimpleBlockRenderingHandler {
 	public int getRenderId() {
 		return 0;
 	}
-
 }
