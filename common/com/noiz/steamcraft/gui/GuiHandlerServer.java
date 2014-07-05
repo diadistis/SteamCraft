@@ -4,7 +4,6 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
 
-import com.noiz.steamcraft.containers.ContainerBoiler;
 import com.noiz.steamcraft.entities.tiles.TEBoiler;
 
 import cpw.mods.fml.common.network.IGuiHandler;

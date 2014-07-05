@@ -14,8 +14,8 @@ import TFC.Core.Player.PlayerInventory;
 import TFC.Core.Util.StringUtil;
 
 import com.noiz.steamcraft.SteamCraftConstants;
-import com.noiz.steamcraft.containers.ContainerBoiler;
 import com.noiz.steamcraft.entities.tiles.TEBoiler;
+import com.noiz.steamcraft.gui.ContainerBoiler;
 
 public class GuiBoiler extends GuiContainer {
 
