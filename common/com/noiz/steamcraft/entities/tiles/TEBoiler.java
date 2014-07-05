@@ -5,9 +5,12 @@ import net.minecraft.inventory.IInventory;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.network.packet.Packet;
+import net.minecraft.network.packet.Packet132TileEntityData;
+import net.minecraft.tileentity.TileEntity;
 import TFC.Core.TFC_Time;
 
-public class TEBoiler extends NetTileEntity implements IInventory {
+public class TEBoiler extends TileEntity implements IInventory {
 
 	public static final int FuelSlot = 0;
 	public static final int AshesSlot = 1;
@@ -108,14 +111,10 @@ public class TEBoiler extends NetTileEntity implements IInventory {
 
 	@Override
 	public void updateEntity() {
-		if (worldObj.isRemote) //
-			return;
-
 		if (TFC_Time.getTotalTicks() > fuelExpirationTime)
 			hasFuel = false;
 
 		if (!hasFuel && items[FuelSlot] != null) {
-			System.out.println(this + ": consume");
 			decrStackSize(FuelSlot, 1);
 			fuelExpirationTime = TFC_Time.getTotalTicks() + TicksPerFuelItem;
 			hasFuel = true;
@@ -123,12 +122,15 @@ public class TEBoiler extends NetTileEntity implements IInventory {
 
 		if (TFC_Time.getTotalTicks() > temperatureStepTime) {
 			temperature += hasFuel ? TempIncrStep : -.8 * TempIncrStep;
+			double t = temperature;
 			temperature = Math.max(0, Math.min(temperature, MaxTemperature));
-			System.out.println(this + " @ " + temperature);
+			if( t != temperature )
+				onInventoryChanged();
 			temperatureStepTime = TFC_Time.getTotalTicks() + TicksToTempIncr;
 		}
 
-		updateFireIcon();
+		if (!worldObj.isRemote) //
+			updateFireIcon();
 	}
 
 	private void updateFireIcon() {
@@ -137,6 +139,10 @@ public class TEBoiler extends NetTileEntity implements IInventory {
 
 		metadata = side | (temperature > 0 ? 8 : 0);
 		worldObj.setBlockMetadataWithNotify(xCoord, yCoord, zCoord, metadata, 3);
+	}
+
+	public int getTemperatureScaled(int s) {
+		return (int) (temperature * s / MaxTemperature);
 	}
 
 	@Override
@@ -189,5 +195,13 @@ public class TEBoiler extends NetTileEntity implements IInventory {
 			items[FuelSlot].writeToNBT(fuel);
 			par1NBTTagCompound.setCompoundTag("Fuel", fuel);
 		}
+	}
+
+	@Override
+	public Packet getDescriptionPacket() {
+		NBTTagCompound tagCompound = new NBTTagCompound();
+		writeToNBT(tagCompound);
+		return new Packet132TileEntityData(xCoord, yCoord, zCoord, 1,
+				tagCompound);
 	}
 }

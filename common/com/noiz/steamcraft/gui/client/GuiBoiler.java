@@ -2,7 +2,6 @@ package com.noiz.steamcraft.gui.client;
 
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.inventory.GuiContainer;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
@@ -11,23 +10,19 @@ import org.lwjgl.opengl.GL11;
 
 import TFC.Core.TFC_Core;
 import TFC.Core.Player.PlayerInventory;
-import TFC.Core.Util.StringUtil;
 
-import com.noiz.steamcraft.SteamCraftConstants;
 import com.noiz.steamcraft.entities.tiles.TEBoiler;
 import com.noiz.steamcraft.gui.ContainerBoiler;
 
 public class GuiBoiler extends GuiContainer {
 
 	private TEBoiler boiler;
-	private EntityPlayer player;
 
 	public GuiBoiler(InventoryPlayer player, TEBoiler boiler, World world,
 			int x, int y, int z) {
 		super(new ContainerBoiler(player, boiler, world, x, y, z));
 
 		this.boiler = boiler;
-		this.player = player.player;
 		xSize = 175;
 		ySize = 85 + PlayerInventory.invYSize;
 	}
@@ -46,9 +41,12 @@ public class GuiBoiler extends GuiContainer {
 		TFC_Core.bindTexture(new ResourceLocation(
 				"steamcraft:textures/gui/gui_boiler.png"));
 		GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
-		int l = (width - xSize) / 2;
-		int i1 = (height - ySize) / 2;
-		drawTexturedModalRect(l, i1, 0, 0, xSize, ySize);
+		int w = (width - xSize) / 2;
+		int h = (height - ySize) / 2;
+		drawTexturedModalRect(w, h, 0, 0, xSize, ySize);
+
+		int t = boiler.getTemperatureScaled(49);
+		drawTexturedModalRect(w + 8, h + 64 - t, 185, 31, 15, 6);
 
 		PlayerInventory.drawInventory(this, width, height, ySize
 				- PlayerInventory.invYSize);
