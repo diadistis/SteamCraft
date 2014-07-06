@@ -1,7 +1,5 @@
 package com.noiz.steamcraft.entities.tiles;
 
-import com.noiz.steamcraft.handlers.client.GuiHandler;
-
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.Item;
@@ -10,11 +8,13 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.INetworkManager;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.Packet132TileEntityData;
-import net.minecraft.tileentity.TileEntity;
 import TFC.API.Constant.TFCBlockID;
 import TFC.Core.TFC_Time;
 
-public class TileEntityHeater extends TileEntity implements IInventory {
+import com.noiz.steamcraft.SteamCraftBlocks;
+import com.noiz.steamcraft.handlers.client.GuiHandler;
+
+public class TileEntityHeater extends TileEntityRectMultiblock implements IInventory {
 
 	public static final int AshItemId = TFCBlockID.Dirt;
 
@@ -28,11 +28,20 @@ public class TileEntityHeater extends TileEntity implements IInventory {
 
 	private ItemStack items[] = { null, null };
 
+	@SuppressWarnings("unused")
+	private int blockCount = 1;
 	private boolean hasFuel = false;
 	private long fuelExpirationTime = 0;
 	private long temperatureStepTime = 0;
 	private float temperature = 0;
 	public int quantizedTemperature = 0;
+
+	private boolean hasScanned = false;
+	private boolean isMaster = false;
+
+	public TileEntityHeater() {
+		super(10, 20);
+	}
 
 	public float temperature() {
 		return temperature;
@@ -120,8 +129,18 @@ public class TileEntityHeater extends TileEntity implements IInventory {
 	}
 
 	@Override
+	protected void structureChanged() {
+		hasScanned = true;
+		isMaster = master[0] == xCoord && master[1] == yCoord || master[2] == zCoord;
+		blockCount = len[0] * len[1] * len[2];
+	}
+
+	@Override
 	public void updateEntity() {
-		if (worldObj.isRemote)
+		if (!hasScanned)
+			scanFor(worldObj, SteamCraftBlocks.blockTank.blockID);
+
+		if (worldObj.isRemote || !isMaster)
 			return;
 
 		if (TFC_Time.getTotalTicks() > fuelExpirationTime)

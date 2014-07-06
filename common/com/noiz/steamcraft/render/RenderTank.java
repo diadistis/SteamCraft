@@ -1,14 +1,10 @@
 package com.noiz.steamcraft.render;
 
-import java.util.Set;
-
 import net.minecraft.block.Block;
 import net.minecraft.client.renderer.RenderBlocks;
 import net.minecraft.world.IBlockAccess;
-import net.minecraftforge.common.ForgeDirection;
 
 import com.noiz.steamcraft.SteamCraftBlocks;
-import com.noiz.steamcraft.blocks.BlockSteelTank;
 
 import cpw.mods.fml.client.registry.ISimpleBlockRenderingHandler;
 
@@ -32,22 +28,39 @@ public class RenderTank implements ISimpleBlockRenderingHandler {
 			float west = pixelSize;
 			float north = pixelSize;
 
-			Set<ForgeDirection> connectedSides = ((BlockSteelTank) block).getConnectedSides();
+			int metadata = world.getBlockMetadata(x, y, z);
+			// Set<ForgeDirection> connectedSides = ((BlockSteelTank)
+			// block).getConnectedSides();
 
-			if (connectedSides.contains(ForgeDirection.EAST)) {
+			if ((metadata & 1) > 0) {
 				width += pixelSize;
 			}
-			if (connectedSides.contains(ForgeDirection.WEST)) {
+			if ((metadata & 2) > 0) {
 				west -= pixelSize;
 				width += pixelSize;
 			}
-			if (connectedSides.contains(ForgeDirection.NORTH)) {
+			if ((metadata & 4) > 0) {
 				north -= pixelSize;
 				length += pixelSize;
 			}
-			if (connectedSides.contains(ForgeDirection.SOUTH)) {
+			if ((metadata & 8) > 0) {
 				length += pixelSize;
 			}
+
+			// if (connectedSides.contains(ForgeDirection.EAST)) {
+			// width += pixelSize;
+			// }
+			// if (connectedSides.contains(ForgeDirection.WEST)) {
+			// west -= pixelSize;
+			// width += pixelSize;
+			// }
+			// if (connectedSides.contains(ForgeDirection.NORTH)) {
+			// north -= pixelSize;
+			// length += pixelSize;
+			// }
+			// if (connectedSides.contains(ForgeDirection.SOUTH)) {
+			// length += pixelSize;
+			// }
 
 			renderer.setRenderBounds(west, 0.0F, north, west + width, 1.0F, north + length);
 			renderer.renderStandardBlock(block, x, y, z);
