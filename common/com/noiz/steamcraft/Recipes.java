@@ -8,6 +8,7 @@ import TFC.TFCItems;
 import TFC.API.Crafting.AnvilManager;
 import TFC.API.Crafting.AnvilRecipe;
 import TFC.API.Crafting.AnvilReq;
+import TFC.API.Crafting.CraftingManagerTFC;
 import TFC.API.Crafting.PlanRecipe;
 import TFC.API.Enums.RuleEnum;
 import cpw.mods.fml.common.registry.GameRegistry;
@@ -18,6 +19,11 @@ public class Recipes
 	{
 		GameRegistry.addRecipe(new ItemStack(SteamCraftBlocks.blockHeater, 1), new Object[] { "PPP","PCP","PPP", Character.valueOf('P'), new ItemStack(TFCItems.SteelSheet2x, 1),Character.valueOf('C'), new ItemStack(SteamCraftItems.Hatch, 1)});
 		GameRegistry.addRecipe(new ItemStack(SteamCraftBlocks.blockTank, 1), new Object[] { "PPP","P P","PPP", Character.valueOf('P'), new ItemStack(TFCItems.SteelSheet2x, 1)});
+	}
+	
+	public static void registerMoldRecipes() 
+	{
+		CraftingManagerTFC.getInstance().addRecipe(new ItemStack(SteamCraftItems.ClayMoldPipe, 1), new Object[] { " # # "," # # "," # # "," # # ","     ", Character.valueOf('#'), new ItemStack(TFCItems.FlatClay, 1, 1)});
 	}
 	
 	public static void registerAnvilRecipes(Random R, World world)

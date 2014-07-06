@@ -4,7 +4,6 @@ import net.minecraft.block.Block;
 import net.minecraft.client.renderer.RenderBlocks;
 import net.minecraft.world.IBlockAccess;
 
-import com.noiz.steamcraft.SteamCraft;
 import com.noiz.steamcraft.SteamCraftBlocks;
 
 import cpw.mods.fml.client.registry.ISimpleBlockRenderingHandler;
