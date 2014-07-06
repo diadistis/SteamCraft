@@ -1,13 +1,10 @@
 package com.noiz.steamcraft.entities.tiles;
 
-import java.util.Arrays;
-
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.Packet132TileEntityData;
 import TFC.Core.TFC_Time;
 
-import com.noiz.steamcraft.SteamCraftBlocks;
 import com.noiz.steamcraft.handlers.client.GuiHandler;
 
 public class TileEntityTank extends TileEntityRectMultiblock {
@@ -39,9 +36,6 @@ public class TileEntityTank extends TileEntityRectMultiblock {
 
 	private int[] heaterLocation = null;
 
-	private boolean hasScanned = false;
-	private boolean isMaster = false;
-
 	public TileEntityTank() {
 		super(10, 20);
 	}
@@ -58,36 +52,8 @@ public class TileEntityTank extends TileEntityRectMultiblock {
 	}
 
 	@Override
-	protected void structureChanged() {
-		hasScanned = true;
-		isMaster = master[0] == xCoord && master[1] == yCoord && master[2] == zCoord;
-		blockCount = len[0] * len[1] * len[2];
-
-		int metadata = 0;
-		if (blockCount > 1) {
-			if (master[0] < xCoord)
-				metadata |= 1;
-			if (master[0] + len[0] - 1 > xCoord)
-				metadata |= 2;
-			if (master[2] < zCoord)
-				metadata |= 4;
-			if (master[2] + len[2] - 1 > zCoord)
-				metadata |= 8;
-		}
-
-		System.out.println("[" + Integer.toHexString(hashCode()) + "] @(" + xCoord + ", " + yCoord + ", " + zCoord + ") :: master=" + isMaster + " (" + Arrays.toString(master)
-				+ ") len=" + Arrays.toString(len) + " blocks=" + blockCount + " meta=" + Integer.toBinaryString(metadata));
-
-		if (worldObj != null)
-			worldObj.setBlockMetadataWithNotify(xCoord, yCoord, zCoord, metadata, 1);
-	}
-
-	@Override
 	public void updateEntity() {
-		if (!worldObj.isRemote && !hasScanned)
-			scanFor(worldObj, SteamCraftBlocks.blockTank.blockID);
-
-		if (worldObj.isRemote || !isMaster)
+		if (worldObj.isRemote)
 			return;
 
 		if (TFC_Time.getTotalTicks() < pressureNextUpdate)
@@ -148,8 +114,6 @@ public class TileEntityTank extends TileEntityRectMultiblock {
 		quantizedTemperature = (int) (temperature * GuiHandler.GUI_GaugeScale / MaxTemperature);
 		quantizedWater = (int) (waterAmount * GuiHandler.GUI_GaugeScale / (blockCount * CapacityPerBlock));
 		quantizedPressure = (int) (pressure * GuiHandler.GUI_GaugeScale / MaxPressure);
-
-		structureChanged();
 	}
 
 	@Override

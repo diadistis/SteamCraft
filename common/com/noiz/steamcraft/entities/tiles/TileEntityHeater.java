@@ -11,7 +11,6 @@ import net.minecraft.network.packet.Packet132TileEntityData;
 import TFC.API.Constant.TFCBlockID;
 import TFC.Core.TFC_Time;
 
-import com.noiz.steamcraft.SteamCraftBlocks;
 import com.noiz.steamcraft.handlers.client.GuiHandler;
 
 public class TileEntityHeater extends TileEntityRectMultiblock implements IInventory {
@@ -35,9 +34,6 @@ public class TileEntityHeater extends TileEntityRectMultiblock implements IInven
 	private long temperatureStepTime = 0;
 	private float temperature = 0;
 	public int quantizedTemperature = 0;
-
-	private boolean hasScanned = false;
-	private boolean isMaster = false;
 
 	public TileEntityHeater() {
 		super(10, 20);
@@ -129,18 +125,8 @@ public class TileEntityHeater extends TileEntityRectMultiblock implements IInven
 	}
 
 	@Override
-	protected void structureChanged() {
-		hasScanned = true;
-		isMaster = master[0] == xCoord && master[1] == yCoord || master[2] == zCoord;
-		blockCount = len[0] * len[1] * len[2];
-	}
-
-	@Override
 	public void updateEntity() {
-		if (!hasScanned)
-			scanFor(worldObj, SteamCraftBlocks.blockTank.blockID);
-
-		if (worldObj.isRemote || !isMaster)
+		if (worldObj.isRemote)
 			return;
 
 		if (TFC_Time.getTotalTicks() > fuelExpirationTime)
