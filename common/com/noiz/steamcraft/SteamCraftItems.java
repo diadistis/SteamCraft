@@ -4,7 +4,7 @@ import net.minecraft.item.Item;
 
 import com.noiz.steamcraft.items.ItemHatch;
 import com.noiz.steamcraft.items.ItemLeadPipe;
-import com.noiz.steamcraft.items.ItemPotteryMold;
+import com.noiz.steamcraft.items.ItemPipeMold;
 
 public class SteamCraftItems {
 	
@@ -14,7 +14,7 @@ public class SteamCraftItems {
 	
 	public static void Setup() {
 		Hatch = new ItemHatch(5555).setUnlocalizedName("Hatch");
-		ClayMoldPipe = new ItemPotteryMold(5556).setMetaNames(new String[]{"Clay Mold Pipe","Ceramic Mold Pipe",
+		ClayMoldPipe = new ItemPipeMold(5556).setMetaNames(new String[]{"Clay Mold Pipe","Ceramic Mold Pipe",
 				"Ceramic Mold Pipe Lead"}).setUnlocalizedName("Pick Mold");
 		LeadPipe = new ItemLeadPipe(5557).setUnlocalizedName("Lead Pipe");
 	}
