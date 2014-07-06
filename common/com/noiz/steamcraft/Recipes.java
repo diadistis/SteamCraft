@@ -9,6 +9,8 @@ import TFC.API.Crafting.AnvilManager;
 import TFC.API.Crafting.AnvilRecipe;
 import TFC.API.Crafting.AnvilReq;
 import TFC.API.Crafting.CraftingManagerTFC;
+import TFC.API.Crafting.KilnCraftingManager;
+import TFC.API.Crafting.KilnRecipe;
 import TFC.API.Crafting.PlanRecipe;
 import TFC.API.Enums.RuleEnum;
 import cpw.mods.fml.common.registry.GameRegistry;
@@ -23,7 +25,20 @@ public class Recipes
 	
 	public static void registerMoldRecipes() 
 	{
-		CraftingManagerTFC.getInstance().addRecipe(new ItemStack(SteamCraftItems.ClayMoldPipe, 1), new Object[] { " # # "," # # "," # # "," # # ","     ", Character.valueOf('#'), new ItemStack(TFCItems.FlatClay, 1, 1)});
+		CraftingManagerTFC manager = CraftingManagerTFC.getInstance();
+		
+		manager.addRecipe(new ItemStack(SteamCraftItems.ClayMoldPipe, 1), new Object[] { " # # "," # # "," # # "," # # ","     ", Character.valueOf('#'), new ItemStack(TFCItems.FlatClay, 1, 1)});
+	}
+	
+	public static void registerKilnRecipes()
+	{
+		KilnCraftingManager manager = KilnCraftingManager.getInstance();
+
+		manager.addRecipe(
+				new KilnRecipe(
+						new ItemStack(SteamCraftItems.ClayMoldPipe, 1, 0),
+						0, 
+						new ItemStack(SteamCraftItems.ClayMoldPipe, 1, 1)));
 	}
 	
 	public static void registerAnvilRecipes(Random R, World world)
