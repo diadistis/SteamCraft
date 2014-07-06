@@ -76,7 +76,13 @@ public class BlockSteelTank extends Block implements ITileEntityProvider {
 			ItemStack equipped = player.getCurrentEquippedItem();
 			if (equipped != null && equipped.getItem().itemID == TFCItems.WoodenBucketWater.itemID) {
 				tank.addBucket();
-				equipped.itemID = TFCItems.WoodenBucketEmpty.itemID;
+				if (equipped.stackSize == 1)
+					equipped.itemID = TFCItems.WoodenBucketEmpty.itemID;
+				else {
+					equipped.stackSize--;
+					ItemStack stack = new ItemStack(TFCItems.WoodenBucketEmpty);
+					player.setItemInUse(stack, TFCItems.WoodenBucketEmpty.getMaxItemUseDuration(stack));
+				}
 				return true;
 			}
 		}

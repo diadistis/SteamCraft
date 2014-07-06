@@ -29,8 +29,7 @@ public class RenderTank implements ISimpleBlockRenderingHandler {
 			float north = pixelSize;
 
 			int metadata = world.getBlockMetadata(x, y, z);
-			metadata = 1|2;
-			
+
 			// Set<ForgeDirection> connectedSides = ((BlockSteelTank)
 			// block).getConnectedSides();
 

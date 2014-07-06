@@ -3,8 +3,10 @@ package com.noiz.steamcraft.entities.tiles;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.Packet132TileEntityData;
+import net.minecraft.tileentity.TileEntity;
 import TFC.Core.TFC_Time;
 
+import com.noiz.steamcraft.SteamCraftBlocks;
 import com.noiz.steamcraft.handlers.client.GuiHandler;
 
 public class TileEntityTank extends TileEntityRectMultiblock {
@@ -16,13 +18,13 @@ public class TileEntityTank extends TileEntityRectMultiblock {
 	public static final float CapacityPerBlock = 100f;
 
 	public static final float MaxPressure = 1000f;
-	public static final float PressureDecay = 5f;
+	public static final float PressureDecay = 10f;
 	public static final float MinTemperatureBoiling = 100f;
 	public static final float MaxTemperature = 500f;
 
-	public static final float HeatTransferFactor = .01f;
-	public static final float BoilAmountFactor = 0;
-	public static final float PressureAmountFactor = 0;
+	public static final float HeatTransferFactor = .04f;
+	public static final float BoilAmountFactor = .005f;
+	public static final float PressureAmountFactor = 20f;
 
 	private int blockCount = 1;
 	private float waterAmount = 0;
@@ -70,9 +72,18 @@ public class TileEntityTank extends TileEntityRectMultiblock {
 			if (waterAmount < 1)
 				return;
 
+			if (heaterLocation == null)
+				detectHeater();
+
 			TileEntityHeater heater = null;
-			if (heaterLocation != null)
-				heater = (TileEntityHeater) worldObj.getBlockTileEntity(heaterLocation[0], heaterLocation[1], heaterLocation[2]);
+			if (heaterLocation != null) {
+				TileEntity entity = worldObj.getBlockTileEntity(heaterLocation[0], heaterLocation[1], heaterLocation[2]);
+				if (entity == null || !(entity instanceof TileEntityHeater)) {
+					heaterLocation = null;
+					return;
+				}
+				heater = (TileEntityHeater) entity;
+			}
 
 			if (heater == null)
 				return;
@@ -86,14 +97,19 @@ public class TileEntityTank extends TileEntityRectMultiblock {
 			pressure = Math.min(MaxPressure, pressure + delta * PressureAmountFactor);
 		} finally {
 			if (p != pressure || w != waterAmount || t != temperature) {
-				quantizedTemperature = (int) (temperature * GuiHandler.GUI_GaugeScale / MaxTemperature);
-				quantizedWater = (int) (waterAmount * GuiHandler.GUI_GaugeScale / (blockCount * CapacityPerBlock));
-				quantizedPressure = (int) (pressure * GuiHandler.GUI_GaugeScale / MaxPressure);
-
+				quantizeUIGaugeValues();
 				worldObj.markBlockForUpdate(xCoord, yCoord, zCoord);
 				onInventoryChanged();
 			}
 		}
+	}
+
+	private void detectHeater() {
+		int id = worldObj.getBlockId(xCoord, yCoord - 1, zCoord);
+		if (id == SteamCraftBlocks.blockHeater.blockID)
+			heaterLocation = new int[] { xCoord, yCoord - 1, zCoord };
+		else
+			heaterLocation = null;
 	}
 
 	@Override
@@ -111,9 +127,7 @@ public class TileEntityTank extends TileEntityRectMultiblock {
 		else
 			heaterLocation = null;
 
-		quantizedTemperature = (int) (temperature * GuiHandler.GUI_GaugeScale / MaxTemperature);
-		quantizedWater = (int) (waterAmount * GuiHandler.GUI_GaugeScale / (blockCount * CapacityPerBlock));
-		quantizedPressure = (int) (pressure * GuiHandler.GUI_GaugeScale / MaxPressure);
+		quantizeUIGaugeValues();
 	}
 
 	@Override
@@ -135,5 +149,11 @@ public class TileEntityTank extends TileEntityRectMultiblock {
 		NBTTagCompound tagCompound = new NBTTagCompound();
 		writeToNBT(tagCompound);
 		return new Packet132TileEntityData(xCoord, yCoord, zCoord, 1, tagCompound);
+	}
+
+	private void quantizeUIGaugeValues() {
+		quantizedTemperature = (int) (temperature * GuiHandler.GUI_GaugeScale / MaxTemperature);
+		quantizedWater = (int) (waterAmount * GuiHandler.GUI_GaugeScale / (blockCount * CapacityPerBlock));
+		quantizedPressure = (int) (pressure * GuiHandler.GUI_GaugeScale / MaxPressure);
 	}
 }
