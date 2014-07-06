@@ -31,7 +31,11 @@ public class Recipes
 		manager.addRecipe(new ItemStack(SteamCraftItems.ClayMoldPipe, 1), new Object[] { " # # "," # # "," # # "," # # ","     ", Character.valueOf('#'), new ItemStack(TFCItems.FlatClay, 1, 1)});
 
 		GameRegistry.addShapelessRecipe(new ItemStack(SteamCraftItems.LeadPipe), 
-				new Object[] {getStackNoTemp(new ItemStack(SteamCraftItems.ClayMoldPipe, 1, 2))});	}
+				new Object[] {getStackNoTemp(new ItemStack(SteamCraftItems.ClayMoldPipe, 1, 2))});
+		
+		CraftingManagerTFC.getInstance().addRecipe(new ItemStack(SteamCraftItems.ClayMoldPipe, 1, 2), 
+				new Object[] {"12", Character.valueOf('1'), getStackTemp(new ItemStack(TFCItems.LeadUnshaped, 1, 1)), Character.valueOf('2'), new ItemStack(SteamCraftItems.ClayMoldPipe, 1, 1)});
+	}
 	
 	public static ItemStack	getStackTemp(ItemStack is)
 	{

@@ -1,16 +1,16 @@
 package com.noiz.steamcraft.items;
 
-import com.noiz.steamcraft.SteamCraftConstants;
-
 import net.minecraft.client.renderer.texture.IconRegister;
 import net.minecraft.util.Icon;
-import TFC.Items.Pottery.ItemPotteryBase;
+import TFC.Items.Pottery.ItemPotteryMold;
 
-public class ItemPotteryMold extends ItemPotteryBase 
+import com.noiz.steamcraft.SteamCraftConstants;
+
+public class ItemPipeMold extends ItemPotteryMold 
 {
 	Icon leadIcon;
 	
-	public ItemPotteryMold(int id) {
+	public ItemPipeMold(int id) {
 		super(id);
 	}
 	
