@@ -3,8 +3,10 @@ package com.noiz.steamcraft.render;
 import net.minecraft.block.Block;
 import net.minecraft.client.renderer.RenderBlocks;
 import net.minecraft.world.IBlockAccess;
+import net.minecraftforge.common.ForgeDirection;
 
 import com.noiz.steamcraft.SteamCraftBlocks;
+import com.noiz.steamcraft.entities.tiles.multiblock.TileEntityRectMultiblock;
 
 import cpw.mods.fml.client.registry.ISimpleBlockRenderingHandler;
 
@@ -28,40 +30,22 @@ public class RenderTank implements ISimpleBlockRenderingHandler {
 			float west = pixelSize;
 			float north = pixelSize;
 
-			int metadata = world.getBlockMetadata(x, y, z);
+			TileEntityRectMultiblock tank = (TileEntityRectMultiblock) world.getBlockTileEntity(x, y, z);
 
-			// Set<ForgeDirection> connectedSides = ((BlockSteelTank)
-			// block).getConnectedSides();
-
-			if ((metadata & 1) > 0) {
+			if (tank.multiblockInternalDirections.contains(ForgeDirection.EAST)) {
 				width += pixelSize;
 			}
-			if ((metadata & 2) > 0) {
+			if (tank.multiblockInternalDirections.contains(ForgeDirection.WEST)) {
 				west -= pixelSize;
 				width += pixelSize;
 			}
-			if ((metadata & 4) > 0) {
+			if (tank.multiblockInternalDirections.contains(ForgeDirection.NORTH)) {
 				north -= pixelSize;
 				length += pixelSize;
 			}
-			if ((metadata & 8) > 0) {
+			if (tank.multiblockInternalDirections.contains(ForgeDirection.SOUTH)) {
 				length += pixelSize;
 			}
-
-			// if (connectedSides.contains(ForgeDirection.EAST)) {
-			// width += pixelSize;
-			// }
-			// if (connectedSides.contains(ForgeDirection.WEST)) {
-			// west -= pixelSize;
-			// width += pixelSize;
-			// }
-			// if (connectedSides.contains(ForgeDirection.NORTH)) {
-			// north -= pixelSize;
-			// length += pixelSize;
-			// }
-			// if (connectedSides.contains(ForgeDirection.SOUTH)) {
-			// length += pixelSize;
-			// }
 
 			renderer.setRenderBounds(west, 0.0F, north, west + width, 1.0F, north + length);
 			renderer.renderStandardBlock(block, x, y, z);

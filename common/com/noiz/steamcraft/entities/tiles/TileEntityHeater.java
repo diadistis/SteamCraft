@@ -6,11 +6,11 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.INetworkManager;
-import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.Packet132TileEntityData;
 import TFC.API.Constant.TFCBlockID;
 import TFC.Core.TFC_Time;
 
+import com.noiz.steamcraft.entities.tiles.multiblock.TileEntityRectMultiblock;
 import com.noiz.steamcraft.handlers.client.GuiHandler;
 
 public class TileEntityHeater extends TileEntityRectMultiblock implements IInventory {
@@ -34,10 +34,6 @@ public class TileEntityHeater extends TileEntityRectMultiblock implements IInven
 	private long temperatureStepTime = 0;
 	private float temperature = 0;
 	public int quantizedTemperature = 0;
-
-	public TileEntityHeater() {
-		super(10, 20);
-	}
 
 	public float temperature() {
 		return temperature;
@@ -122,6 +118,18 @@ public class TileEntityHeater extends TileEntityRectMultiblock implements IInven
 
 	@Override
 	public void closeChest() {
+	}
+
+	@Override
+	protected void mergeThisMasterToNextOne(TileEntityRectMultiblock nextMaster) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	protected void onStructureDismantle() {
+		// TODO Auto-generated method stub
+
 	}
 
 	@Override
@@ -226,13 +234,6 @@ public class TileEntityHeater extends TileEntityRectMultiblock implements IInven
 			items[FuelSlot].writeToNBT(fuel);
 			par1NBTTagCompound.setCompoundTag("Fuel", fuel);
 		}
-	}
-
-	@Override
-	public Packet getDescriptionPacket() {
-		NBTTagCompound tagCompound = new NBTTagCompound();
-		writeToNBT(tagCompound);
-		return new Packet132TileEntityData(xCoord, yCoord, zCoord, 5, tagCompound);
 	}
 
 	@Override

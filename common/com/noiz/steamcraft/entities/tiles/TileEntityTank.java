@@ -1,12 +1,11 @@
 package com.noiz.steamcraft.entities.tiles;
 
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.network.packet.Packet;
-import net.minecraft.network.packet.Packet132TileEntityData;
 import net.minecraft.tileentity.TileEntity;
 import TFC.Core.TFC_Time;
 
 import com.noiz.steamcraft.SteamCraftBlocks;
+import com.noiz.steamcraft.entities.tiles.multiblock.TileEntityRectMultiblock;
 import com.noiz.steamcraft.handlers.client.GuiHandler;
 
 public class TileEntityTank extends TileEntityRectMultiblock {
@@ -38,10 +37,6 @@ public class TileEntityTank extends TileEntityRectMultiblock {
 
 	private int[] heaterLocation = null;
 
-	public TileEntityTank() {
-		super(10, 20);
-	}
-
 	public boolean isFull() {
 		return waterAmount >= blockCount * CapacityPerBlock;
 	}
@@ -51,6 +46,18 @@ public class TileEntityTank extends TileEntityRectMultiblock {
 
 		quantizedWater = (int) (waterAmount * GuiHandler.GUI_GaugeScale / (blockCount * CapacityPerBlock));
 		onInventoryChanged();
+	}
+
+	@Override
+	protected void mergeThisMasterToNextOne(TileEntityRectMultiblock nextMaster) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	protected void onStructureDismantle() {
+		// TODO Auto-generated method stub
+
 	}
 
 	@Override
@@ -98,8 +105,8 @@ public class TileEntityTank extends TileEntityRectMultiblock {
 		} finally {
 			if (p != pressure || w != waterAmount || t != temperature) {
 				quantizeUIGaugeValues();
-				worldObj.markBlockForUpdate(xCoord, yCoord, zCoord);
 				onInventoryChanged();
+				worldObj.markBlockForUpdate(xCoord, yCoord, zCoord);
 			}
 		}
 	}
@@ -142,13 +149,6 @@ public class TileEntityTank extends TileEntityRectMultiblock {
 		par1nbtTagCompound.setBoolean("HasHeater", heaterLocation != null);
 		if (heaterLocation != null)
 			par1nbtTagCompound.setIntArray("HeaterLoc", heaterLocation);
-	}
-
-	@Override
-	public Packet getDescriptionPacket() {
-		NBTTagCompound tagCompound = new NBTTagCompound();
-		writeToNBT(tagCompound);
-		return new Packet132TileEntityData(xCoord, yCoord, zCoord, 1, tagCompound);
 	}
 
 	private void quantizeUIGaugeValues() {

@@ -5,6 +5,7 @@ import net.minecraft.block.ITileEntityProvider;
 import net.minecraft.block.material.Material;
 import net.minecraft.client.renderer.texture.IconRegister;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.Icon;
@@ -15,6 +16,7 @@ import com.noiz.steamcraft.SteamCraft;
 import com.noiz.steamcraft.SteamCraftBlocks;
 import com.noiz.steamcraft.SteamCraftConstants;
 import com.noiz.steamcraft.entities.tiles.TileEntityTank;
+import com.noiz.steamcraft.entities.tiles.multiblock.TileEntityRectMultiblock;
 import com.noiz.steamcraft.handlers.GuiHandlerServer;
 
 import cpw.mods.fml.relauncher.Side;
@@ -72,8 +74,13 @@ public class BlockSteelTank extends Block implements ITileEntityProvider {
 		if (tank == null)
 			return true;
 
+		ItemStack equipped = player.getCurrentEquippedItem();
+		if (equipped != null && equipped.getItem().itemID == Item.stick.itemID) {
+			TileEntityRectMultiblock.onToolActivationAt(world, player, blockID, x, y, z);
+			return true;
+		}
+
 		if (!tank.isFull()) {
-			ItemStack equipped = player.getCurrentEquippedItem();
 			if (equipped != null && equipped.getItem().itemID == TFCItems.WoodenBucketWater.itemID) {
 				tank.addBucket();
 				if (equipped.stackSize == 1)
@@ -87,7 +94,19 @@ public class BlockSteelTank extends Block implements ITileEntityProvider {
 			}
 		}
 
-		player.openGui(SteamCraft.instance, GuiHandlerServer.GUI_TankID, world, x, y, z);
+		player.openGui(SteamCraft.instance, GuiHandlerServer.GUI_TankID, world, tank.masterX(), tank.masterY(), tank.masterZ());
 		return true;
+	}
+
+	@Override
+	public void onBlockPreDestroy(World world, int x, int y, int z, int metadata) {
+		if (world.isRemote)
+			return;
+
+		TileEntityRectMultiblock tank = (TileEntityRectMultiblock) world.getBlockTileEntity(x, y, z);
+		if (tank == null)
+			return;
+
+		tank.onDestroy(world);
 	}
 }
