@@ -3,6 +3,7 @@ package com.noiz.steamcraft;
 import java.util.Random;
 
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.World;
 import TFC.TFCItems;
 import TFC.API.Crafting.AnvilManager;
@@ -28,6 +29,24 @@ public class Recipes
 		CraftingManagerTFC manager = CraftingManagerTFC.getInstance();
 		
 		manager.addRecipe(new ItemStack(SteamCraftItems.ClayMoldPipe, 1), new Object[] { " # # "," # # "," # # "," # # ","     ", Character.valueOf('#'), new ItemStack(TFCItems.FlatClay, 1, 1)});
+
+		GameRegistry.addShapelessRecipe(new ItemStack(SteamCraftItems.LeadPipe), 
+				new Object[] {getStackNoTemp(new ItemStack(SteamCraftItems.ClayMoldPipe, 1, 2))});	}
+	
+	public static ItemStack	getStackTemp(ItemStack is)
+	{
+		NBTTagCompound Temp = new NBTTagCompound();
+		Temp.setBoolean("temp", true);
+		is.setTagCompound(Temp);
+		return is;
+	}
+	
+	public static ItemStack	getStackNoTemp(ItemStack is)
+	{
+		NBTTagCompound noTemp = new NBTTagCompound();
+		noTemp.setBoolean("noTemp", true);
+		is.setTagCompound(noTemp);
+		return is;
 	}
 	
 	public static void registerKilnRecipes()
