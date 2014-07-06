@@ -42,6 +42,7 @@ public class SteamCraft {
 
 		Recipes.registerRecipes();
 		Recipes.registerMoldRecipes();
+		Recipes.registerKilnRecipes();
 
 		proxy.registerGUI();
 
