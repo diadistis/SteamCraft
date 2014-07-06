@@ -41,6 +41,8 @@ public class SteamCraft {
 	public void initialize(FMLInitializationEvent event) {
 
 		Recipes.registerRecipes();
+		Recipes.registerMoldRecipes();
+		Recipes.registerKilnRecipes();
 
 		proxy.registerGUI();
 
