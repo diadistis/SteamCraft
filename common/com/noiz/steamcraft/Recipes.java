@@ -16,8 +16,8 @@ public class Recipes
 {
 	public static void registerRecipes()
 	{
-		GameRegistry.addRecipe(new ItemStack(SteamCraft.blockHeater, 1), new Object[] { "PPP","PCP","PPP", Character.valueOf('P'), new ItemStack(TFCItems.SteelSheet2x, 1),Character.valueOf('C'), new ItemStack(SteamCraftItems.Hatch, 1)});
-		GameRegistry.addRecipe(new ItemStack(SteamCraft.blockTank, 1), new Object[] { "PPP","P P","PPP", Character.valueOf('P'), new ItemStack(TFCItems.SteelSheet2x, 1)});
+		GameRegistry.addRecipe(new ItemStack(SteamCraftBlocks.blockHeater, 1), new Object[] { "PPP","PCP","PPP", Character.valueOf('P'), new ItemStack(TFCItems.SteelSheet2x, 1),Character.valueOf('C'), new ItemStack(SteamCraftItems.Hatch, 1)});
+		GameRegistry.addRecipe(new ItemStack(SteamCraftBlocks.blockTank, 1), new Object[] { "PPP","P P","PPP", Character.valueOf('P'), new ItemStack(TFCItems.SteelSheet2x, 1)});
 	}
 	
 	public static void registerAnvilRecipes(Random R, World world)

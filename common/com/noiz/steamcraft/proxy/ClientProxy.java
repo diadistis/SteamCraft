@@ -2,7 +2,7 @@ package com.noiz.steamcraft.proxy;
 
 import net.minecraftforge.common.MinecraftForge;
 
-import com.noiz.steamcraft.SteamCraft;
+import com.noiz.steamcraft.SteamCraftBlocks;
 import com.noiz.steamcraft.handlers.client.GuiHandler;
 import com.noiz.steamcraft.render.RenderHeater;
 import com.noiz.steamcraft.render.RenderTank;
@@ -20,7 +20,7 @@ public class ClientProxy extends CommonProxy {
 
 	@Override
 	public void registerRenderInformation() {
-		RenderingRegistry.registerBlockHandler(SteamCraft.blockHeaterRenderId = RenderingRegistry.getNextAvailableRenderId(), new RenderHeater());		
-		RenderingRegistry.registerBlockHandler(SteamCraft.blockTankRenderId = RenderingRegistry.getNextAvailableRenderId(), new RenderTank());		
+		RenderingRegistry.registerBlockHandler(SteamCraftBlocks.blockHeaterRenderId = RenderingRegistry.getNextAvailableRenderId(), new RenderHeater());		
+		RenderingRegistry.registerBlockHandler(SteamCraftBlocks.blockTankRenderId = RenderingRegistry.getNextAvailableRenderId(), new RenderTank());		
 	}
 }

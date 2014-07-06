@@ -16,6 +16,7 @@ import net.minecraftforge.common.ForgeDirection;
 import TFC.TFCItems;
 
 import com.noiz.steamcraft.SteamCraft;
+import com.noiz.steamcraft.SteamCraftBlocks;
 import com.noiz.steamcraft.SteamCraftConstants;
 import com.noiz.steamcraft.entities.tiles.TileEntityTank;
 import com.noiz.steamcraft.handlers.GuiHandlerServer;
@@ -52,7 +53,7 @@ public class BlockSteelTank extends Block implements ITileEntityProvider {
 
 	@Override
 	public int getRenderType() {
-		return SteamCraft.blockTankRenderId;
+		return SteamCraftBlocks.blockTankRenderId;
 	}
 
 	@Override

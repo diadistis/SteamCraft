@@ -13,6 +13,7 @@ import net.minecraft.util.MathHelper;
 import net.minecraft.world.World;
 
 import com.noiz.steamcraft.SteamCraft;
+import com.noiz.steamcraft.SteamCraftBlocks;
 import com.noiz.steamcraft.SteamCraftConstants;
 import com.noiz.steamcraft.entities.tiles.TileEntityHeater;
 import com.noiz.steamcraft.handlers.GuiHandlerServer;
@@ -53,7 +54,7 @@ public class BlockSteelHeater extends BlockContainer implements ITileEntityProvi
 	
 	@Override
 	public int getRenderType() {		
-		return SteamCraft.blockHeaterRenderId;
+		return SteamCraftBlocks.blockHeaterRenderId;
 	}
 	
 	@Override

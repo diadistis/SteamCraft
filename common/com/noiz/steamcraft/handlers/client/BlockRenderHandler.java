@@ -4,7 +4,7 @@ import net.minecraft.block.Block;
 import net.minecraft.client.renderer.RenderBlocks;
 import net.minecraft.world.IBlockAccess;
 
-import com.noiz.steamcraft.SteamCraft;
+import com.noiz.steamcraft.SteamCraftBlocks;
 import com.noiz.steamcraft.render.RenderHeater;
 
 import cpw.mods.fml.client.registry.ISimpleBlockRenderingHandler;
@@ -20,7 +20,7 @@ public class BlockRenderHandler implements ISimpleBlockRenderingHandler {
 	public boolean renderWorldBlock(IBlockAccess world, int x, int y, int z,
 			Block block, int modelId, RenderBlocks renderer) {
 
-		if (modelId == SteamCraft.blockHeaterRenderId)
+		if (modelId == SteamCraftBlocks.blockHeaterRenderId)
 		{
 			return RenderHeater.renderHeater(block, x, y, z, renderer);
 		}

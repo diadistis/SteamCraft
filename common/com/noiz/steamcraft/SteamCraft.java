@@ -1,11 +1,5 @@
 package com.noiz.steamcraft;
 
-import net.minecraft.block.Block;
-import net.minecraft.block.material.Material;
-import net.minecraft.creativetab.CreativeTabs;
-
-import com.noiz.steamcraft.blocks.BlockSteelHeater;
-import com.noiz.steamcraft.blocks.BlockSteelTank;
 import com.noiz.steamcraft.handlers.ServerTickHandler;
 import com.noiz.steamcraft.handlers.client.ClientTickHandler;
 import com.noiz.steamcraft.proxy.CommonProxy;
@@ -28,16 +22,6 @@ public class SteamCraft {
 	@SidedProxy(clientSide = "com.noiz.steamcraft.proxy.ClientProxy", serverSide = "com.noiz.steamcraft.proxy.ServerProxy")
 	public static CommonProxy proxy;
 
-	public static int blockHeaterRenderId;
-
-	public static int blockTankRenderId;
-
-	public static final Block blockHeater = new BlockSteelHeater(Material.iron).setHardness(0.5F).setStepSound(Block.soundMetalFootstep).setUnlocalizedName("Steel Heater")
-			.setCreativeTab(CreativeTabs.tabBlock);
-
-	public static final Block blockTank = new BlockSteelTank(Material.iron).setHardness(0.5F).setStepSound(Block.soundMetalFootstep).setUnlocalizedName("Steel Tank")
-			.setCreativeTab(CreativeTabs.tabBlock);
-
 	@Mod.EventHandler
 	public void preInit(FMLPreInitializationEvent event) {
 		instance = this;
@@ -45,7 +29,9 @@ public class SteamCraft {
 		TickRegistry.registerTickHandler(new ServerTickHandler(), Side.SERVER);
 		TickRegistry.registerTickHandler(new ClientTickHandler(), Side.CLIENT);
 
-		proxy.registerBlocks();
+		SteamCraftBlocks.LoadBlocks();
+		SteamCraftBlocks.RegisterBlocks();
+
 		proxy.registerEntities();
 
 		SteamCraftItems.Setup();
