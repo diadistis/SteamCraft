@@ -6,6 +6,7 @@ import net.minecraft.creativetab.CreativeTabs;
 
 import com.noiz.steamcraft.blocks.BlockSteelHeater;
 import com.noiz.steamcraft.blocks.BlockSteelTank;
+import com.noiz.steamcraft.entities.tiles.multiblock.TileEntityRectMultiblock;
 
 import cpw.mods.fml.common.registry.GameRegistry;
 import cpw.mods.fml.common.registry.LanguageRegistry;
@@ -21,6 +22,9 @@ public class SteamCraftBlocks {
 	public static void LoadBlocks() {
 		blockHeater = new BlockSteelHeater(Material.iron).setHardness(0.5F).setStepSound(Block.soundMetalFootstep).setUnlocalizedName("Steel Heater").setCreativeTab(CreativeTabs.tabBlock);
 		blockTank = new BlockSteelTank(Material.iron).setHardness(0.5F).setStepSound(Block.soundMetalFootstep).setUnlocalizedName("Steel Tank").setCreativeTab(CreativeTabs.tabBlock);
+		
+		TileEntityRectMultiblock.registerStructureLimits(blockHeater.blockID, 10, 1, 10);
+		TileEntityRectMultiblock.registerStructureLimits(blockTank.blockID, 40, 40, 40);
 	}
 	
 	public static void RegisterBlocks() {

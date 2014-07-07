@@ -11,7 +11,7 @@ class Structure {
 		this.maxCoords = maxCoords;
 	}
 
-	boolean isValid(int minLength, int maxLength) {
+	boolean isValid(int minLength, int[] limits) {
 		if (minCoords == null || minCoords.length != 3)
 			return false;
 		if (maxCoords == null || maxCoords.length != 3)
@@ -22,7 +22,8 @@ class Structure {
 				return false;
 
 			int d = maxCoords[i] - minCoords[i];
-			if (d < minLength || d > maxLength)
+			int max = limits == null ? TileEntityRectMultiblock.MaxScanDistance : limits[i];
+			if (d < minLength || d > max)
 				return false;
 		}
 

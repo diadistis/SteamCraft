@@ -24,6 +24,7 @@ public class TileEntityHeater extends TileEntityRectMultiblock implements IInven
 	public static final int TicksToTempIncr = 50;
 	public static final float TempIncrStep = 150;
 	public static final float MaxTemperature = 4000f;
+	public static final float AshPropability = .1f;
 
 	private ItemStack items[] = { null, null };
 
@@ -140,42 +141,41 @@ public class TileEntityHeater extends TileEntityRectMultiblock implements IInven
 		if (TFC_Time.getTotalTicks() > fuelExpirationTime)
 			hasFuel = false;
 
-		boolean updateInventory = false;
-
-		if (!hasFuel && items[FuelSlot] != null) {
-			boolean ashConsumed = true;
-			if (temperature > 0) {
-				if (items[AshesSlot] == null)
-					items[AshesSlot] = new ItemStack(AshItemId, 1, 0);
-				else if (items[AshesSlot].stackSize < 64)
-					++items[AshesSlot].stackSize;
-				else
-					ashConsumed = false;
+		float t = temperature;
+		boolean inv_changed = false;
+		try {
+			if (!hasFuel && items[FuelSlot] != null) {
+				boolean ashProduced = true;
+				if (temperature > 0 && AshPropability > Math.random()) {
+					if (items[AshesSlot] == null)
+						items[AshesSlot] = new ItemStack(AshItemId, 1, 0);
+					else if (items[AshesSlot].stackSize < 64)
+						++items[AshesSlot].stackSize;
+					else
+						ashProduced = false;
+				}
+				if (ashProduced) {
+					decrStackSize(FuelSlot, 1);
+					fuelExpirationTime = TFC_Time.getTotalTicks() + TicksPerFuelItem;
+					hasFuel = true;
+					inv_changed = true;
+				}
 			}
-			if (ashConsumed) {
-				decrStackSize(FuelSlot, 1);
-				fuelExpirationTime = TFC_Time.getTotalTicks() + TicksPerFuelItem;
-				hasFuel = true;
-				updateInventory = true;
+
+			if (TFC_Time.getTotalTicks() > temperatureStepTime) {
+				temperature += hasFuel ? TempIncrStep : -.8 * TempIncrStep;
+				temperature = Math.max(0, Math.min(temperature, MaxTemperature));
+				quantizedTemperature = (int) (temperature * GuiHandler.GUI_GaugeScale / MaxTemperature);
+				temperatureStepTime = TFC_Time.getTotalTicks() + TicksToTempIncr;
+			}
+
+			updateFireIcon();
+		} finally {
+			if (t != temperature || inv_changed) {
+				worldObj.markBlockForUpdate(xCoord, yCoord, zCoord);
+				onInventoryChanged();
 			}
 		}
-
-		if (TFC_Time.getTotalTicks() > temperatureStepTime) {
-			temperature += hasFuel ? TempIncrStep : -.8 * TempIncrStep;
-			double t = temperature;
-			temperature = Math.max(0, Math.min(temperature, MaxTemperature));
-			quantizedTemperature = (int) (temperature * GuiHandler.GUI_GaugeScale / MaxTemperature);
-			if (t != temperature)
-				updateInventory = true;
-			temperatureStepTime = TFC_Time.getTotalTicks() + TicksToTempIncr;
-		}
-
-		if (updateInventory) {
-			worldObj.markBlockForUpdate(xCoord, yCoord, zCoord);
-			onInventoryChanged();
-		}
-
-		updateFireIcon();
 	}
 
 	private void updateFireIcon() {

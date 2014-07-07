@@ -27,11 +27,16 @@ public abstract class TileEntityRectMultiblock extends TileEntity {
 	private static int[] last_tool_activation_coords = null;
 	private static long activation_expires_at = 0;
 
+	private static final Map<Integer, int[]> structureLimits = new HashMap<>();
 	private static final Map<String, Structure> structures = new HashMap<>();
 
 	public final Set<ForgeDirection> multiblockInternalDirections = new HashSet<>();
 	private int master[] = { 0, 0, 0 };
 	String structureID;
+
+	public static void registerStructureLimits(int blockID, int maxX, int maxY, int maxZ) {
+		structureLimits.put(blockID, new int[] { Math.min(MaxScanDistance, maxX), Math.min(MaxScanDistance, maxY), Math.min(MaxScanDistance, maxZ) });
+	}
 
 	public static void onToolActivationAt(World world, EntityPlayer player, int blockID, int x, int y, int z) {
 		if (last_tool_activation_coords == null || TFC_Time.getTotalTicks() > activation_expires_at || blockID != last_tool_activattion_blockID) {
@@ -47,7 +52,7 @@ public abstract class TileEntityRectMultiblock extends TileEntity {
 		last_tool_activation_coords = null;
 
 		Structure struct = new Structure(min, max);
-		if (!struct.isValid(0, MaxScanDistance)) {
+		if (!struct.isValid(0, structureLimits.get(blockID))) {
 			player.addChatMessage("Structure dimensions are not valid (too big?)");
 			return;
 		}
