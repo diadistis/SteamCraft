@@ -1,7 +1,5 @@
 package com.noiz.steamcraft.entities.tiles.multiblock;
 
-import java.util.Arrays;
-
 import net.minecraftforge.common.ForgeDirection;
 
 class Structure {
@@ -14,7 +12,6 @@ class Structure {
 	}
 
 	boolean isValid(int[] limits) {
-		System.out.println(limits == null ? "--limitless--" : Arrays.toString(limits));
 		if (minCoords == null || minCoords.length != 3)
 			return false;
 		if (maxCoords == null || maxCoords.length != 3)

@@ -47,8 +47,13 @@ public class GuiHeater extends GuiContainer {
 		int ash_pc = (int) Math.ceil((100f * heater.getItemCount(TileEntityHeater.AshesSlot)) / heater.getMaxItemCount(TileEntityHeater.AshesSlot));
 		String ash = String.format("%d (%d%%)", heater.getItemCount(TileEntityHeater.AshesSlot), ash_pc);
 
+		String targets = "No Targets";
+		if (heater.heatTargets() > 0)
+			targets = String.format("Targets: %d", heater.heatTargets());
+
 		fontRenderer.drawString(fuel, w + 105, h + 30, 0x3c3c3c);
 		fontRenderer.drawString(ash, w + 105, h + 50, 0x3c3c3c);
+		fontRenderer.drawString(targets, w + 35, h + 67, 0x3c3c3c);
 
 		PlayerInventory.drawInventory(this, width, height, ySize - PlayerInventory.invYSize);
 	}

@@ -1,7 +1,8 @@
 package com.noiz.steamcraft.entities.tiles;
 
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.IInventory;
@@ -10,6 +11,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.INetworkManager;
 import net.minecraft.network.packet.Packet132TileEntityData;
+import net.minecraft.tileentity.TileEntity;
 import TFC.TFCBlocks;
 import TFC.Core.TFC_Time;
 
@@ -32,12 +34,15 @@ public class TileEntityHeater extends TileEntityRectMultiblock implements IInven
 	public static final float MaxTemperature = 4000f;
 	public static final float AshPropability = .1f;
 
+	public static final int HeatablesScanPeriod = 40;
+
 	private static final int[] MaxItemsPerBlock = { FuelPerBlock, AshesPerBlock };
 
 	private final ItemStack items[] = { new ItemStack(Item.coal, 0), new ItemStack(TFCBlocks.Dirt, 0) };
 	private final int itemCounts[] = { 0, 0 };
 
-	private final List<IHeatable> heatables = new ArrayList<>();
+	private final Set<IHeatable> heatables = new HashSet<>();
+	private int heatTargetsOverride = 0;
 
 	/**
 	 * when <code>true</code> the heater consumes a fuel item that has been
@@ -49,7 +54,17 @@ public class TileEntityHeater extends TileEntityRectMultiblock implements IInven
 	private float temperature = 0;
 	private long temperatureStepTime = 0;
 
+	private int ticksSinceLastScan = 0;
+
 	public int quantizedTemperature = 0;
+
+	public int heatTargets() {
+		return heatables.size() == 0 ? heatTargetsOverride : heatables.size();
+	}
+
+	public void setHeatTargets(int no) {
+		heatTargetsOverride = no;
+	}
 
 	public int getItemCount(int pos) {
 		return itemCounts[pos];
@@ -198,8 +213,7 @@ public class TileEntityHeater extends TileEntityRectMultiblock implements IInven
 
 	@Override
 	protected void structureCreatedWithThisAsMaster() {
-		// TODO Auto-generated method stub
-
+		scanForHeatables();
 	}
 
 	@Override
@@ -242,7 +256,13 @@ public class TileEntityHeater extends TileEntityRectMultiblock implements IInven
 				temperatureStepTime = TFC_Time.getTotalTicks() + TicksToTempIncr;
 			}
 
+			++ticksSinceLastScan;
 			if (temperature > 0) {
+				if (ticksSinceLastScan > HeatablesScanPeriod) {
+					ticksSinceLastScan = 0;
+					scanForHeatables();
+				}
+
 				float delta = 0;
 				for (IHeatable target : heatables)
 					delta -= target.transferHeat(structureBlockCount(), temperature);
@@ -266,6 +286,24 @@ public class TileEntityHeater extends TileEntityRectMultiblock implements IInven
 
 		metadata = side | (onFire ? 8 : 0);
 		worldObj.setBlockMetadataWithNotify(xCoord, yCoord, zCoord, metadata, 3);
+	}
+
+	private void scanForHeatables() {
+		int[] min = { 0, 0, 0 };
+		int[] max = { 0, 0, 0 };
+		fetchStructureCoordinates(min, max);
+
+		heatables.clear();
+		for (int x = min[0]; x <= max[0]; ++x)
+			for (int z = min[2]; z <= max[2]; ++z) {
+				TileEntity e = worldObj.getBlockTileEntity(x, yCoord + 1, z);
+				if (e != null && e instanceof IHeatable) {
+					if (e instanceof TileEntityRectMultiblock)
+						heatables.add((IHeatable) ((TileEntityRectMultiblock) e).master());
+					else
+						heatables.add((IHeatable) e);
+				}
+			}
 	}
 
 	@Override

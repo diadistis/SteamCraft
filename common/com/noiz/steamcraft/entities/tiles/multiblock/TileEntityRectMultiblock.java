@@ -46,6 +46,10 @@ public abstract class TileEntityRectMultiblock extends TileEntity {
 			player.addChatMessage(String.format("Marker set @ (%d,%d,%d)", x, y, z));
 			return;
 		}
+		if (last_tool_activation_coords[0] == x && last_tool_activation_coords[1] == y && last_tool_activation_coords[2] == z) {
+			last_tool_activation_coords = null;
+			return;
+		}
 
 		int[] min = { Math.min(last_tool_activation_coords[0], x), Math.min(last_tool_activation_coords[1], y), Math.min(last_tool_activation_coords[2], z) };
 		int[] max = { Math.max(last_tool_activation_coords[0], x), Math.max(last_tool_activation_coords[1], y), Math.max(last_tool_activation_coords[2], z) };
@@ -254,6 +258,18 @@ public abstract class TileEntityRectMultiblock extends TileEntity {
 		for (ForgeDirection d : ForgeDirection.VALID_DIRECTIONS)
 			if ((mask & (1 << d.ordinal())) > 0)
 				multiblockInternalDirections.add(d);
+	}
+
+	protected void fetchStructureCoordinates(int[] min, int[] max) {
+		Structure structure = structureID == null ? null : structures.get(structureID);
+		if (structure == null) {
+			min[0] = max[0] = xCoord;
+			min[1] = max[1] = yCoord;
+			min[2] = max[2] = zCoord;
+			return;
+		}
+		System.arraycopy(structure.minCoords, 0, min, 0, 3);
+		System.arraycopy(structure.maxCoords, 0, max, 0, 3);
 	}
 
 	@Override

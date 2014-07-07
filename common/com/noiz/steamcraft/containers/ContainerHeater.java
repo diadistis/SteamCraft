@@ -19,6 +19,7 @@ public class ContainerHeater extends Container {
 	private int quantizedTemperature;
 	private int fuelCount;
 	private int ashCount;
+	private int heatTargets;
 
 	public ContainerHeater(InventoryPlayer inventoryplayer, TileEntityHeater heater, World world, int x, int y, int z) {
 
@@ -50,6 +51,7 @@ public class ContainerHeater extends Container {
 		par1iCrafting.sendProgressBarUpdate(this, 0, heater.quantizedTemperature);
 		par1iCrafting.sendProgressBarUpdate(this, 1, heater.getItemCount(TileEntityHeater.FuelSlot));
 		par1iCrafting.sendProgressBarUpdate(this, 2, heater.getItemCount(TileEntityHeater.AshesSlot));
+		par1iCrafting.sendProgressBarUpdate(this, 3, heater.heatTargets());
 	}
 
 	@Override
@@ -61,15 +63,21 @@ public class ContainerHeater extends Container {
 
 			if (quantizedTemperature != heater.quantizedTemperature)
 				icrafting.sendProgressBarUpdate(this, 0, heater.quantizedTemperature);
+
 			if (fuelCount != heater.getItemCount(TileEntityHeater.FuelSlot))
 				icrafting.sendProgressBarUpdate(this, 1, heater.getItemCount(TileEntityHeater.FuelSlot));
+
 			if (ashCount != heater.getItemCount(TileEntityHeater.AshesSlot))
 				icrafting.sendProgressBarUpdate(this, 2, heater.getItemCount(TileEntityHeater.AshesSlot));
+
+			if (heatTargets != heater.heatTargets())
+				icrafting.sendProgressBarUpdate(this, 3, heater.heatTargets());
 		}
 
 		quantizedTemperature = heater.quantizedTemperature;
 		fuelCount = heater.getItemCount(TileEntityHeater.FuelSlot);
 		ashCount = heater.getItemCount(TileEntityHeater.AshesSlot);
+		heatTargets = heater.heatTargets();
 	}
 
 	@SideOnly(Side.CLIENT)
@@ -80,6 +88,8 @@ public class ContainerHeater extends Container {
 			heater.setItemCount(TileEntityHeater.FuelSlot, par2);
 		if (par1 == 2)
 			heater.setItemCount(TileEntityHeater.AshesSlot, par2);
+		if (par1 == 3)
+			heater.setHeatTargets(par2);
 	}
 
 	@Override
