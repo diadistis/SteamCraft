@@ -15,8 +15,10 @@ import cpw.mods.fml.relauncher.SideOnly;
 
 public class ContainerHeater extends Container {
 	private TileEntityHeater heater;
-	
+
 	private int quantizedTemperature;
+	private int fuelCount;
+	private int ashCount;
 
 	public ContainerHeater(InventoryPlayer inventoryplayer, TileEntityHeater heater, World world, int x, int y, int z) {
 
@@ -46,6 +48,8 @@ public class ContainerHeater extends Container {
 	public void addCraftingToCrafters(ICrafting par1iCrafting) {
 		super.addCraftingToCrafters(par1iCrafting);
 		par1iCrafting.sendProgressBarUpdate(this, 0, heater.quantizedTemperature);
+		par1iCrafting.sendProgressBarUpdate(this, 1, heater.getItemCount(TileEntityHeater.FuelSlot));
+		par1iCrafting.sendProgressBarUpdate(this, 2, heater.getItemCount(TileEntityHeater.AshesSlot));
 	}
 
 	@Override
@@ -57,15 +61,25 @@ public class ContainerHeater extends Container {
 
 			if (quantizedTemperature != heater.quantizedTemperature)
 				icrafting.sendProgressBarUpdate(this, 0, heater.quantizedTemperature);
+			if (fuelCount != heater.getItemCount(TileEntityHeater.FuelSlot))
+				icrafting.sendProgressBarUpdate(this, 1, heater.getItemCount(TileEntityHeater.FuelSlot));
+			if (ashCount != heater.getItemCount(TileEntityHeater.AshesSlot))
+				icrafting.sendProgressBarUpdate(this, 2, heater.getItemCount(TileEntityHeater.AshesSlot));
 		}
 
 		quantizedTemperature = heater.quantizedTemperature;
+		fuelCount = heater.getItemCount(TileEntityHeater.FuelSlot);
+		ashCount = heater.getItemCount(TileEntityHeater.AshesSlot);
 	}
 
 	@SideOnly(Side.CLIENT)
 	public void updateProgressBar(int par1, int par2) {
 		if (par1 == 0)
 			heater.quantizedTemperature = par2;
+		if (par1 == 1)
+			heater.setItemCount(TileEntityHeater.FuelSlot, par2);
+		if (par1 == 2)
+			heater.setItemCount(TileEntityHeater.AshesSlot, par2);
 	}
 
 	@Override
@@ -82,10 +96,10 @@ public class ContainerHeater extends Container {
 		}
 
 		if (heaterSlot.getStack().isItemEqual(userSlot.getStack())) {
-			int max = 64 - heaterSlot.getStack().stackSize;
+			int max = heater.getMaxItemCount(TileEntityHeater.FuelSlot) - heater.getItemCount(TileEntityHeater.FuelSlot);
 			int delta = Math.min(max, userSlot.getStack().stackSize);
 
-			heaterSlot.getStack().stackSize += delta;
+			heater.addFuelItems(delta);
 			userSlot.getStack().stackSize -= delta;
 
 			if (userSlot.getStack().stackSize == 0)

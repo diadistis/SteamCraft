@@ -3,14 +3,13 @@ package com.noiz.steamcraft.entities.tiles;
 import java.util.List;
 
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.tileentity.TileEntity;
 import TFC.Core.TFC_Time;
 
 import com.noiz.steamcraft.SteamCraftBlocks;
 import com.noiz.steamcraft.entities.tiles.multiblock.TileEntityRectMultiblock;
 import com.noiz.steamcraft.handlers.client.GuiHandler;
 
-public class TileEntityTank extends TileEntityRectMultiblock {
+public class TileEntityTank extends TileEntityRectMultiblock implements IHeatable {
 
 	public static final int PressureUpdatePeriodTicks = 40;
 	public static final float TicksPerLitre = 40;
@@ -30,16 +29,22 @@ public class TileEntityTank extends TileEntityRectMultiblock {
 	private float waterAmount = 0;
 	private float pressure = 0;
 	private float temperature = 0;
+	private float deltaT = 0;
 	private long pressureNextUpdate = 0;
 
 	public int quantizedTemperature = 0;
 	public int quantizedWater = 0;
 	public int quantizedPressure = 0;
 
-	private int[] heaterLocation = null;
-
 	public int capacity() {
 		return (int) (structureBlockCount() * CapacityPerBlock);
+	}
+
+	@Override
+	public float transferHeat(int blocks, float temperature) {
+		float deltaT = (temperature - this.temperature) * HeatTransferFactor;
+		this.deltaT = Math.max(0, Math.min(MaxTemperature, this.deltaT + deltaT));
+		return deltaT;
 	}
 
 	public String status() {
@@ -87,6 +92,10 @@ public class TileEntityTank extends TileEntityRectMultiblock {
 	}
 
 	@Override
+	protected void structureCreatedWithThisAsMaster() {
+	}
+
+	@Override
 	public void updateEntity() {
 		if (worldObj.isRemote)
 			return;
@@ -102,27 +111,10 @@ public class TileEntityTank extends TileEntityRectMultiblock {
 		try {
 			pressure = Math.max(0, pressure - PressureDecay);
 			waterAmount = Math.max(0, waterAmount);
-			if (waterAmount < 1)
-				return;
 
-			if (heaterLocation == null)
-				detectHeater();
-
-			TileEntityHeater heater = null;
-			if (heaterLocation != null) {
-				TileEntity entity = worldObj.getBlockTileEntity(heaterLocation[0], heaterLocation[1], heaterLocation[2]);
-				if (entity == null || !(entity instanceof TileEntityHeater)) {
-					heaterLocation = null;
-					return;
-				}
-				heater = (TileEntityHeater) entity;
-			}
-
-			if (heater == null)
-				return;
-
-			float deltaT = (heater.temperature() - temperature) * HeatTransferFactor;
 			temperature = Math.max(0, Math.min(MaxTemperature, temperature + deltaT));
+			deltaT = transferHeat(structureBlockCount(), 0); // next round's
+																// decay
 
 			float maxWater = temperature > MinTemperatureBoiling ? BoilAmountFactor * temperature : 0;
 			float delta = Math.min(waterAmount, maxWater);
@@ -137,14 +129,6 @@ public class TileEntityTank extends TileEntityRectMultiblock {
 		}
 	}
 
-	private void detectHeater() {
-		int id = worldObj.getBlockId(xCoord, yCoord - 1, zCoord);
-		if (id == SteamCraftBlocks.blockHeater.blockID)
-			heaterLocation = new int[] { xCoord, yCoord - 1, zCoord };
-		else
-			heaterLocation = null;
-	}
-
 	@Override
 	public void readFromNBT(NBTTagCompound par1nbtTagCompound) {
 		super.readFromNBT(par1nbtTagCompound);
@@ -155,12 +139,6 @@ public class TileEntityTank extends TileEntityRectMultiblock {
 		waterAmount = par1nbtTagCompound.getFloat("Water");
 		pressure = par1nbtTagCompound.getFloat("Pressure");
 		temperature = par1nbtTagCompound.getFloat("Temperature");
-
-		boolean hasHeater = par1nbtTagCompound.getBoolean("HasHeater");
-		if (hasHeater)
-			heaterLocation = par1nbtTagCompound.getIntArray("HeaterLoc");
-		else
-			heaterLocation = null;
 
 		quantizeUIGaugeValues();
 	}
@@ -175,10 +153,6 @@ public class TileEntityTank extends TileEntityRectMultiblock {
 		par1nbtTagCompound.setFloat("Water", waterAmount);
 		par1nbtTagCompound.setFloat("Pressure", pressure);
 		par1nbtTagCompound.setFloat("Temperature", temperature);
-
-		par1nbtTagCompound.setBoolean("HasHeater", heaterLocation != null);
-		if (heaterLocation != null)
-			par1nbtTagCompound.setIntArray("HeaterLoc", heaterLocation);
 	}
 
 	private void quantizeUIGaugeValues() {

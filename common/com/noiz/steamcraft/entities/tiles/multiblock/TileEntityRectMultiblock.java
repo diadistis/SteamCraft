@@ -74,6 +74,7 @@ public abstract class TileEntityRectMultiblock extends TileEntity {
 		for (TileEntityRectMultiblock entity : entities)
 			entity.setStructureMaster(newMaster, id, struct);
 
+		newMaster.structureCreatedWithThisAsMaster();
 		player.addChatMessage("Structure built!");
 	}
 
@@ -124,6 +125,8 @@ public abstract class TileEntityRectMultiblock extends TileEntity {
 	protected abstract void mergeThisMasterToNextOne(TileEntityRectMultiblock nextMaster);
 
 	protected abstract void onStructureDismantle();
+
+	protected abstract void structureCreatedWithThisAsMaster();
 
 	@SuppressWarnings("unchecked")
 	public <T extends TileEntityRectMultiblock> T master() {

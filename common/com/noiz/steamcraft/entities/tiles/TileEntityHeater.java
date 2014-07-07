@@ -7,7 +7,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.INetworkManager;
 import net.minecraft.network.packet.Packet132TileEntityData;
-import TFC.API.Constant.TFCBlockID;
+import TFC.TFCBlocks;
 import TFC.Core.TFC_Time;
 
 import com.noiz.steamcraft.entities.tiles.multiblock.TileEntityRectMultiblock;
@@ -15,10 +15,12 @@ import com.noiz.steamcraft.handlers.client.GuiHandler;
 
 public class TileEntityHeater extends TileEntityRectMultiblock implements IInventory {
 
-	public static final int AshItemId = TFCBlockID.Dirt;
-
 	public static final int FuelSlot = 0;
 	public static final int AshesSlot = 1;
+
+	public static final int FuelPerBlock = 64;
+	public static final int AshesPerBlock = 64;
+	public static final int ItemsPerInvSlot = 32;
 
 	public static final int TicksPerFuelItem = 30;
 	public static final int TicksToTempIncr = 50;
@@ -26,18 +28,44 @@ public class TileEntityHeater extends TileEntityRectMultiblock implements IInven
 	public static final float MaxTemperature = 4000f;
 	public static final float AshPropability = .1f;
 
-	private ItemStack items[] = { null, null };
+	private static final int[] MaxItemsPerBlock = { FuelPerBlock, AshesPerBlock };
 
-	@SuppressWarnings("unused")
-	private int blockCount = 1;
-	private boolean hasFuel = false;
+	private final ItemStack items[] = { new ItemStack(Item.coal, 0), new ItemStack(TFCBlocks.Dirt, 0) };
+	private final int itemCounts[] = { 0, 0 };
+
+	/**
+	 * when <code>true</code> the heater consumes a fuel item that has been
+	 * removed from its inventory.
+	 */
+	private boolean consumingExistingFuel = false;
 	private long fuelExpirationTime = 0;
-	private long temperatureStepTime = 0;
+
 	private float temperature = 0;
+	private long temperatureStepTime = 0;
+
 	public int quantizedTemperature = 0;
+
+	public int getItemCount(int pos) {
+		return itemCounts[pos];
+	}
+
+	public void setItemCount(int pos, int count) {
+		itemCounts[pos] = count;
+		items[pos].stackSize = Math.min(ItemsPerInvSlot, itemCounts[pos]);
+	}
+
+	public int getMaxItemCount(int pos) {
+		return MaxItemsPerBlock[pos];
+	}
 
 	public float temperature() {
 		return temperature;
+	}
+
+	public void addFuelItems(int count) {
+		count = Math.min(count, MaxItemsPerBlock[FuelSlot] - itemCounts[FuelSlot]);
+		itemCounts[FuelSlot] += count;
+		items[FuelSlot].stackSize = Math.min(itemCounts[FuelSlot], ItemsPerInvSlot);
 	}
 
 	@Override
@@ -47,7 +75,10 @@ public class TileEntityHeater extends TileEntityRectMultiblock implements IInven
 
 	@Override
 	public ItemStack getStackInSlot(int pos) {
-		return pos < 0 || pos > 1 ? null : items[pos];
+		if (pos < 0 || pos > 1 || itemCounts[pos] == 0) //
+			return null;
+		items[pos].stackSize = Math.min(itemCounts[pos], ItemsPerInvSlot);
+		return items[pos];
 	}
 
 	@Override
@@ -59,19 +90,14 @@ public class TileEntityHeater extends TileEntityRectMultiblock implements IInven
 
 		ItemStack itemstack = null;
 
-		if (items[pos].stackSize <= count) {
-			itemstack = items[pos];
-			items[pos] = null;
+		int decreaseAmount = Math.min(count, itemCounts[pos]);
+
+		if (decreaseAmount > 0) {
+			itemCounts[pos] -= decreaseAmount;
+			itemstack = new ItemStack(items[pos].itemID, decreaseAmount, 0);
 			onInventoryChanged();
-			return itemstack;
 		}
 
-		itemstack = items[pos].splitStack(count);
-
-		if (items[pos].stackSize == 0)
-			items[pos] = null;
-
-		onInventoryChanged();
 		return itemstack;
 	}
 
@@ -82,13 +108,15 @@ public class TileEntityHeater extends TileEntityRectMultiblock implements IInven
 
 	@Override
 	public void setInventorySlotContents(int pos, ItemStack itemstack) {
-		if (pos < 0 || pos > 1) //
+		if (pos < 0 || pos > 1 || itemstack == null) //
 			return;
 
-		items[pos] = itemstack;
+		itemCounts[pos] += itemstack.stackSize;
+		int maxCount = structureBlockCount() * MaxItemsPerBlock[pos];
+		if (itemCounts[pos] > maxCount)
+			itemCounts[pos] = maxCount;
 
-		if (itemstack != null && itemstack.stackSize > this.getInventoryStackLimit())
-			itemstack.stackSize = this.getInventoryStackLimit();
+		itemstack.stackSize -= Math.min(itemstack.stackSize, maxCount);
 
 		onInventoryChanged();
 	}
@@ -134,46 +162,50 @@ public class TileEntityHeater extends TileEntityRectMultiblock implements IInven
 	}
 
 	@Override
+	protected void structureCreatedWithThisAsMaster() {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
 	public void updateEntity() {
 		if (worldObj.isRemote)
 			return;
 
 		if (TFC_Time.getTotalTicks() > fuelExpirationTime)
-			hasFuel = false;
+			consumingExistingFuel = false;
 
 		float t = temperature;
-		boolean inv_changed = false;
+		int a = itemCounts[AshesSlot];
+		int f = itemCounts[FuelSlot];
 		try {
-			if (!hasFuel && items[FuelSlot] != null) {
+			if (!consumingExistingFuel && itemCounts[FuelSlot] > 0) {
 				boolean ashProduced = true;
 				if (temperature > 0 && AshPropability > Math.random()) {
-					if (items[AshesSlot] == null)
-						items[AshesSlot] = new ItemStack(AshItemId, 1, 0);
-					else if (items[AshesSlot].stackSize < 64)
-						++items[AshesSlot].stackSize;
-					else
+					if (itemCounts[AshesSlot] >= structureBlockCount() * AshesPerBlock)
 						ashProduced = false;
+					else
+						++itemCounts[AshesSlot];
 				}
 				if (ashProduced) {
-					decrStackSize(FuelSlot, 1);
+					--itemCounts[FuelSlot];
 					fuelExpirationTime = TFC_Time.getTotalTicks() + TicksPerFuelItem;
-					hasFuel = true;
-					inv_changed = true;
+					consumingExistingFuel = true;
 				}
 			}
 
 			if (TFC_Time.getTotalTicks() > temperatureStepTime) {
-				temperature += hasFuel ? TempIncrStep : -.8 * TempIncrStep;
+				temperature += consumingExistingFuel ? TempIncrStep : -.8 * TempIncrStep;
 				temperature = Math.max(0, Math.min(temperature, MaxTemperature));
-				quantizedTemperature = (int) (temperature * GuiHandler.GUI_GaugeScale / MaxTemperature);
 				temperatureStepTime = TFC_Time.getTotalTicks() + TicksToTempIncr;
 			}
 
 			updateFireIcon();
 		} finally {
-			if (t != temperature || inv_changed) {
+			if (t != temperature || a != itemCounts[AshesSlot] || f != fuelExpirationTime) {
 				worldObj.markBlockForUpdate(xCoord, yCoord, zCoord);
 				onInventoryChanged();
+				quantizeUIGaugeValues();
 			}
 		}
 	}
@@ -195,50 +227,35 @@ public class TileEntityHeater extends TileEntityRectMultiblock implements IInven
 	public void readFromNBT(NBTTagCompound par1NBTTagCompound) {
 		super.readFromNBT(par1NBTTagCompound);
 
+		if (!isMaster())
+			return;
+
 		temperature = par1NBTTagCompound.getFloat("Temperature");
+		itemCounts[FuelSlot] = par1NBTTagCompound.getInteger("Fuel");
+		itemCounts[AshesSlot] = par1NBTTagCompound.getInteger("Ashes");
 
-		boolean empty = par1NBTTagCompound.getBoolean("NoAshes");
-
-		if (!empty) {
-			NBTTagCompound ashes = (NBTTagCompound) par1NBTTagCompound.getTag("Ashes");
-			items[AshesSlot] = ItemStack.loadItemStackFromNBT(ashes);
-		}
-
-		empty = par1NBTTagCompound.getBoolean("Empty");
-
-		if (!empty) {
-			NBTTagCompound fuel = (NBTTagCompound) par1NBTTagCompound.getTag("Fuel");
-			items[FuelSlot] = ItemStack.loadItemStackFromNBT(fuel);
-		} else
-			items[FuelSlot] = null;
+		quantizeUIGaugeValues();
 	}
 
 	@Override
 	public void writeToNBT(NBTTagCompound par1NBTTagCompound) {
 		super.writeToNBT(par1NBTTagCompound);
 
+		if (!isMaster())
+			return;
+
 		par1NBTTagCompound.setFloat("Temperature", temperature);
-
-		par1NBTTagCompound.setBoolean("NoAshes", items[AshesSlot] == null);
-
-		if (items[AshesSlot] != null) {
-			NBTTagCompound ashes = new NBTTagCompound();
-			items[AshesSlot].writeToNBT(ashes);
-			par1NBTTagCompound.setCompoundTag("Ashes", ashes);
-		}
-
-		par1NBTTagCompound.setBoolean("Empty", items[FuelSlot] == null);
-
-		if (items[FuelSlot] != null) {
-			NBTTagCompound fuel = new NBTTagCompound();
-			items[FuelSlot].writeToNBT(fuel);
-			par1NBTTagCompound.setCompoundTag("Fuel", fuel);
-		}
+		par1NBTTagCompound.setInteger("Fuel", itemCounts[FuelSlot]);
+		par1NBTTagCompound.setInteger("Ashes", itemCounts[AshesSlot]);
 	}
 
 	@Override
 	public void onDataPacket(INetworkManager net, Packet132TileEntityData pkt) {
 		readFromNBT(pkt.data);
 		updateFireIcon();
+	}
+
+	private void quantizeUIGaugeValues() {
+		quantizedTemperature = (int) (temperature * GuiHandler.GUI_GaugeScale / MaxTemperature);
 	}
 }
