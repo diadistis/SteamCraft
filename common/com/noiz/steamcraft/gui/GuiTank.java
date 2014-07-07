@@ -31,6 +31,7 @@ public class GuiTank extends GuiContainer {
 	}
 
 	protected void drawGuiContainerForegroundLayer() {
+		GL11.glColor4f(.0F, .0F, .0F, 1.0F);
 		fontRenderer.drawString("Tank", 8, (ySize - 96) + 2, 0x404040);
 	}
 

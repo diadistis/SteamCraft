@@ -80,6 +80,8 @@ public class BlockSteelTank extends Block implements ITileEntityProvider {
 			return true;
 		}
 
+		tank = tank.master();
+
 		if (!tank.isFull()) {
 			if (equipped != null && equipped.getItem().itemID == TFCItems.WoodenBucketWater.itemID) {
 				tank.addBucket();
@@ -94,7 +96,7 @@ public class BlockSteelTank extends Block implements ITileEntityProvider {
 			}
 		}
 
-		player.openGui(SteamCraft.instance, GuiHandlerServer.GUI_TankID, world, tank.masterX(), tank.masterY(), tank.masterZ());
+		player.openGui(SteamCraft.instance, GuiHandlerServer.GUI_TankID, world, tank.xCoord, tank.yCoord, tank.zCoord);
 		return true;
 	}
 
@@ -106,7 +108,7 @@ public class BlockSteelTank extends Block implements ITileEntityProvider {
 		TileEntityRectMultiblock tank = (TileEntityRectMultiblock) world.getBlockTileEntity(x, y, z);
 		if (tank == null)
 			return;
-
+		
 		tank.onDestroy(world);
 	}
 }

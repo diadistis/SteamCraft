@@ -1,5 +1,7 @@
 package com.noiz.steamcraft.entities.tiles;
 
+import java.util.List;
+
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import TFC.Core.TFC_Time;
@@ -25,7 +27,6 @@ public class TileEntityTank extends TileEntityRectMultiblock {
 	public static final float BoilAmountFactor = .005f;
 	public static final float PressureAmountFactor = 20f;
 
-	private int blockCount = 1;
 	private float waterAmount = 0;
 	private float pressure = 0;
 	private float temperature = 0;
@@ -38,26 +39,41 @@ public class TileEntityTank extends TileEntityRectMultiblock {
 	private int[] heaterLocation = null;
 
 	public boolean isFull() {
-		return waterAmount >= blockCount * CapacityPerBlock;
+		return waterAmount >= structureBlockCount() * CapacityPerBlock;
 	}
 
 	public void addBucket() {
-		waterAmount = Math.min(blockCount * CapacityPerBlock, waterAmount + LiquidPerBucket);
+		waterAmount = Math.min(structureBlockCount() * CapacityPerBlock, waterAmount + LiquidPerBucket);
 
-		quantizedWater = (int) (waterAmount * GuiHandler.GUI_GaugeScale / (blockCount * CapacityPerBlock));
+		quantizedWater = (int) (waterAmount * GuiHandler.GUI_GaugeScale / (structureBlockCount() * CapacityPerBlock));
 		onInventoryChanged();
 	}
 
 	@Override
 	protected void mergeThisMasterToNextOne(TileEntityRectMultiblock nextMaster) {
-		// TODO Auto-generated method stub
+		TileEntityTank masterTank = (TileEntityTank) nextMaster;
+		masterTank.waterAmount += waterAmount;
 
+		masterTank.quantizeUIGaugeValues();
 	}
 
 	@Override
 	protected void onStructureDismantle() {
-		// TODO Auto-generated method stub
+		pressure = temperature = 0;
 
+		List<TileEntityRectMultiblock> members = structureMembers(SteamCraftBlocks.blockTank.blockID);
+		if (members.size() == 0)
+			return;
+
+		float waterPerMember = waterAmount / members.size();
+		for (TileEntityRectMultiblock member : members) {
+			TileEntityTank tank = (TileEntityTank) member;
+			tank.waterAmount = waterPerMember;
+			tank.temperature = 0;
+			tank.pressure = 0;
+			
+			tank.quantizeUIGaugeValues();
+		}
 	}
 
 	@Override
@@ -123,7 +139,9 @@ public class TileEntityTank extends TileEntityRectMultiblock {
 	public void readFromNBT(NBTTagCompound par1nbtTagCompound) {
 		super.readFromNBT(par1nbtTagCompound);
 
-		blockCount = par1nbtTagCompound.getInteger("BlockCount");
+		if (!isMaster())
+			return;
+
 		waterAmount = par1nbtTagCompound.getFloat("Water");
 		pressure = par1nbtTagCompound.getFloat("Pressure");
 		temperature = par1nbtTagCompound.getFloat("Temperature");
@@ -141,7 +159,9 @@ public class TileEntityTank extends TileEntityRectMultiblock {
 	public void writeToNBT(NBTTagCompound par1nbtTagCompound) {
 		super.writeToNBT(par1nbtTagCompound);
 
-		par1nbtTagCompound.setInteger("BlockCount", blockCount);
+		if (!isMaster())
+			return;
+
 		par1nbtTagCompound.setFloat("Water", waterAmount);
 		par1nbtTagCompound.setFloat("Pressure", pressure);
 		par1nbtTagCompound.setFloat("Temperature", temperature);
@@ -153,7 +173,7 @@ public class TileEntityTank extends TileEntityRectMultiblock {
 
 	private void quantizeUIGaugeValues() {
 		quantizedTemperature = (int) (temperature * GuiHandler.GUI_GaugeScale / MaxTemperature);
-		quantizedWater = (int) (waterAmount * GuiHandler.GUI_GaugeScale / (blockCount * CapacityPerBlock));
+		quantizedWater = (int) (waterAmount * GuiHandler.GUI_GaugeScale / (structureBlockCount() * CapacityPerBlock));
 		quantizedPressure = (int) (pressure * GuiHandler.GUI_GaugeScale / MaxPressure);
 	}
 }

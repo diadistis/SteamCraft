@@ -52,7 +52,7 @@ public abstract class TileEntityRectMultiblock extends TileEntity {
 		last_tool_activation_coords = null;
 
 		Structure struct = new Structure(min, max);
-		if (!struct.isValid(0, structureLimits.get(blockID))) {
+		if (!struct.isValid(structureLimits.get(blockID))) {
 			player.addChatMessage("Structure dimensions are not valid (too big?)");
 			return;
 		}
@@ -87,20 +87,22 @@ public abstract class TileEntityRectMultiblock extends TileEntity {
 		else
 			masterEntity = (TileEntityRectMultiblock) world.getBlockTileEntity(master[0], master[1], master[2]);
 
-		Structure struct = structures.remove(structureID);
 		if (masterEntity != null)
 			masterEntity.onStructureDismantle();
 
+		Structure struct = structures.remove(structureID);
 		for (int i = struct.minCoords[0]; i <= struct.maxCoords[0]; ++i)
 			for (int j = struct.minCoords[1]; j <= struct.maxCoords[1]; ++j)
 				for (int k = struct.minCoords[2]; k <= struct.maxCoords[2]; ++k) {
 					TileEntityRectMultiblock entity = (TileEntityRectMultiblock) world.getBlockTileEntity(i, j, k);
 					entity.setStructureMaster(entity, null, null);
 				}
+
+		System.out.println("Structure destroyed");
 	}
 
 	private void setStructureMaster(TileEntityRectMultiblock master, String id, Structure structure) {
-		if (isMaster())
+		if (isMaster() && master != this)
 			mergeThisMasterToNextOne(master);
 
 		structureID = id;
@@ -122,6 +124,13 @@ public abstract class TileEntityRectMultiblock extends TileEntity {
 	protected abstract void mergeThisMasterToNextOne(TileEntityRectMultiblock nextMaster);
 
 	protected abstract void onStructureDismantle();
+
+	@SuppressWarnings("unchecked")
+	public <T extends TileEntityRectMultiblock> T master() {
+		if (isMaster())
+			return (T) this;
+		return (T) worldObj.getBlockTileEntity(master[0], master[1], master[2]);
+	}
 
 	@Override
 	public void readFromNBT(NBTTagCompound par1nbtTagCompound) {
@@ -176,6 +185,15 @@ public abstract class TileEntityRectMultiblock extends TileEntity {
 		return structureID == null ? zCoord : master[2];
 	}
 
+	protected int structureBlockCount() {
+		if (structureID == null)
+			return 1;
+		Structure struct = structures.get(structureID);
+		if (struct == null)
+			return 1;
+		return struct.blockCount();
+	}
+
 	private static TileEntityRectMultiblock getStructureBlocksAndMaster(World world, Structure struct, int blockID, List<TileEntityRectMultiblock> entities, Set<String> structures) {
 		int[] master_coords = struct.masterCoords();
 		TileEntityRectMultiblock master = null;
@@ -197,6 +215,28 @@ public abstract class TileEntityRectMultiblock extends TileEntity {
 						master = entity;
 				}
 		return master;
+	}
+
+	protected List<TileEntityRectMultiblock> structureMembers(int blockID) {
+		List<TileEntityRectMultiblock> members = new ArrayList<>();
+		if (structureID == null)
+			return members;
+
+		Structure struct = structures.get(structureID);
+		if (struct == null)
+			return members;
+
+		for (int i = struct.minCoords[0]; i <= struct.maxCoords[0]; ++i)
+			for (int j = struct.minCoords[1]; j <= struct.maxCoords[1]; ++j)
+				for (int k = struct.minCoords[2]; k <= struct.maxCoords[2]; ++k) {
+					int bid = worldObj.getBlockId(i, j, k);
+					if (bid != blockID)
+						continue;
+					TileEntityRectMultiblock entity = (TileEntityRectMultiblock) worldObj.getBlockTileEntity(i, j, k);
+					members.add(entity);
+				}
+
+		return members;
 	}
 
 	private int getTouchedSidesMask() {

@@ -1,5 +1,7 @@
 package com.noiz.steamcraft.entities.tiles.multiblock;
 
+import java.util.Arrays;
+
 import net.minecraftforge.common.ForgeDirection;
 
 class Structure {
@@ -11,19 +13,17 @@ class Structure {
 		this.maxCoords = maxCoords;
 	}
 
-	boolean isValid(int minLength, int[] limits) {
+	boolean isValid(int[] limits) {
+		System.out.println(limits == null ? "--limitless--" : Arrays.toString(limits));
 		if (minCoords == null || minCoords.length != 3)
 			return false;
 		if (maxCoords == null || maxCoords.length != 3)
 			return false;
 
 		for (int i = 0; i < 3; ++i) {
-			if (maxCoords[i] < minCoords[i])
-				return false;
-
-			int d = maxCoords[i] - minCoords[i];
+			int d = maxCoords[i] - minCoords[i] + 1;
 			int max = limits == null ? TileEntityRectMultiblock.MaxScanDistance : limits[i];
-			if (d < minLength || d > max)
+			if (d < 1 || d > max)
 				return false;
 		}
 
@@ -43,5 +43,9 @@ class Structure {
 			member.multiblockInternalDirections.add(ForgeDirection.NORTH);
 		if (member.zCoord != maxCoords[2])
 			member.multiblockInternalDirections.add(ForgeDirection.SOUTH);
+	}
+
+	int blockCount() {
+		return (maxCoords[0] - minCoords[0] + 1) * (maxCoords[1] - minCoords[1] + 1) * (maxCoords[2] - minCoords[2] + 1);
 	}
 }
