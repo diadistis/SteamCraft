@@ -2,17 +2,15 @@ package com.noiz.ti.physics;
 
 public enum SolidMaterial {
 	//
-	Steel(45, 2),
+	Steel(1),
 	//
-	StainlessSteel(18, 2),
+	StainlessSteel(1),
 	//
 	;
 
-	public final float internalThermalConductivity;
-	public final float thermalConductivityToAir;
+	public final float thermalConductivity;
 
-	private SolidMaterial(float internalThermalConductivity, float thermalConductivityToAir) {
-		this.internalThermalConductivity = internalThermalConductivity;
-		this.thermalConductivityToAir = thermalConductivityToAir;
+	private SolidMaterial(float thermalConductivity) {
+		this.thermalConductivity = thermalConductivity;
 	}
 }

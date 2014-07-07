@@ -2,12 +2,12 @@ package com.noiz.ti.physics;
 
 import TFC.Core.TFC_Climate;
 
-public class Thermal {
+public class Thermodynamics {
 	// Reference:
 	// http://en.wikipedia.org/wiki/Newton%27s_law_of_cooling#Newton.27s_law_of_cooling
 
 	public static float airEnergyAbsorption(float time, float temperature, float area, SolidMaterial material, int x, int z) {
-		return material.thermalConductivityToAir * area * (temperature - TFC_Climate.getBioTemperature(x, z)) * time;
+		return .1f * material.thermalConductivity * area * (temperature - TFC_Climate.getBioTemperature(x, z)) * time;
 	}
 
 	public static float doEnergyTransfer(float deltaTime, IHeatSource source, IHeatable[] heatables, SolidMaterial conductor) {
@@ -19,7 +19,7 @@ public class Thermal {
 
 		float srcTemp = source.temperature();
 		for (int i = 0; i < heatables.length; ++i) {
-			transfers[i] = deltaTime * conductor.internalThermalConductivity * heatables[i].area(source) * (srcTemp - heatables[i].temperature());
+			transfers[i] = deltaTime * conductor.thermalConductivity * .5f * heatables[i].area(source) * (srcTemp - heatables[i].temperature());
 			totalTransfer += Math.max(0, transfers[i]);
 		}
 		totalTransfer /= heatables.length;
@@ -32,12 +32,8 @@ public class Thermal {
 			totalTransfer = source.energy();
 		}
 
-		for (int i = 0; i < heatables.length; ++i) {
-			float hA = conductor.internalThermalConductivity * heatables[i].area(source);
-			float t = (transfers[i] + hA * heatables[i].temperature()) / hA;
-
-			heatables[i].setTemperatureAfterHeatTransfer(t);
-		}
+		for (int i = 0; i < heatables.length; ++i)
+			heatables[i].doHeatTransfer(transfers[i]);
 
 		return totalTransfer;
 	}

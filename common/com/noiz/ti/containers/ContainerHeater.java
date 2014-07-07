@@ -20,6 +20,7 @@ public class ContainerHeater extends Container {
 	private int fuelCount;
 	private int ashCount;
 	private int heatTargets;
+	private int quantizedOutput_Wh;
 
 	public ContainerHeater(InventoryPlayer inventoryplayer, TileEntityHeater heater, World world, int x, int y, int z) {
 
@@ -52,6 +53,7 @@ public class ContainerHeater extends Container {
 		par1iCrafting.sendProgressBarUpdate(this, 1, heater.getItemCount(TileEntityHeater.FuelSlot));
 		par1iCrafting.sendProgressBarUpdate(this, 2, heater.getItemCount(TileEntityHeater.AshesSlot));
 		par1iCrafting.sendProgressBarUpdate(this, 3, heater.heatTargets());
+		par1iCrafting.sendProgressBarUpdate(this, 4, heater.quantizedOutput_Wh);
 	}
 
 	@Override
@@ -72,12 +74,16 @@ public class ContainerHeater extends Container {
 
 			if (heatTargets != heater.heatTargets())
 				icrafting.sendProgressBarUpdate(this, 3, heater.heatTargets());
+
+			if (quantizedOutput_Wh != heater.quantizedOutput_Wh)
+				icrafting.sendProgressBarUpdate(this, 4, heater.quantizedOutput_Wh);
 		}
 
 		quantizedEnergy = heater.quantizedEnergy;
 		fuelCount = heater.getItemCount(TileEntityHeater.FuelSlot);
 		ashCount = heater.getItemCount(TileEntityHeater.AshesSlot);
 		heatTargets = heater.heatTargets();
+		quantizedOutput_Wh = heater.quantizedOutput_Wh;
 	}
 
 	@SideOnly(Side.CLIENT)
@@ -90,6 +96,8 @@ public class ContainerHeater extends Container {
 			heater.setItemCount(TileEntityHeater.AshesSlot, par2);
 		if (par1 == 3)
 			heater.setHeatTargets(par2);
+		if (par1 == 4)
+			heater.quantizedOutput_Wh = par2;
 	}
 
 	@Override
@@ -106,16 +114,16 @@ public class ContainerHeater extends Container {
 		}
 
 		if (heaterSlot.getStack().isItemEqual(userSlot.getStack())) {
-			int max = heater.getMaxItemCount(TileEntityHeater.FuelSlot) - heater.getItemCount(TileEntityHeater.FuelSlot);
-			int delta = Math.min(max, userSlot.getStack().stackSize);
+			int original = heaterSlot.getStack().stackSize;
 
-			heater.addItems(TileEntityHeater.FuelSlot, delta);
+			int delta = heater.addItems(TileEntityHeater.FuelSlot, userSlot.getStack().stackSize, heaterSlot.getStack());
 			userSlot.getStack().stackSize -= delta;
 
 			if (userSlot.getStack().stackSize == 0)
 				userSlot.putStack(null);
 
-			heaterSlot.onSlotChanged();
+			if (original != heaterSlot.getStack().stackSize)
+				heaterSlot.onSlotChanged();
 			userSlot.onSlotChanged();
 		}
 

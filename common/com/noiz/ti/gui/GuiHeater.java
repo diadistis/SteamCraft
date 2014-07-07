@@ -14,10 +14,10 @@ import TFC.Core.Player.PlayerInventory;
 import com.noiz.ti.TerraIndustrialisConstants;
 import com.noiz.ti.containers.ContainerHeater;
 import com.noiz.ti.entities.tiles.TileEntityHeater;
+import com.noiz.ti.physics.Units;
 
 public class GuiHeater extends GuiContainer {
 
-	private static final String[] UnitPrefices = { "", "k", "M", "G" };
 	private TileEntityHeater heater;
 
 	public GuiHeater(InventoryPlayer player, TileEntityHeater heater, World world, int x, int y, int z) {
@@ -49,20 +49,27 @@ public class GuiHeater extends GuiContainer {
 		int ash_pc = (int) Math.ceil((100f * heater.getItemCount(TileEntityHeater.AshesSlot)) / heater.getMaxItemCount(TileEntityHeater.AshesSlot));
 		String ash = String.format("%d (%d%%)", heater.getItemCount(TileEntityHeater.AshesSlot), ash_pc);
 
-		String targets = "No Targets";
-		if (heater.heatTargets() > 0)
-			targets = String.format("Targets: %d", heater.heatTargets());
-
 		float nrg = heater.energy();
-		int pfx = 0;
-		for (; nrg > 1000 && pfx < UnitPrefices.length - 1; ++pfx)
-			nrg /= 1000;
-		String content = String.format("Energy: %.1f%sJ", nrg, UnitPrefices[pfx]);
+		float btu = Units.joule2btu(nrg);
 
+		int b_pfx = 0;
+		for (; btu > 1000 && b_pfx < GUITools.UnitPrefices.length - 1; ++b_pfx)
+			btu /= 1000;
+
+		String content = String.format("Stored: %d%sBTU", (int) Math.ceil(btu), b_pfx == 0 ? "" : GUITools.UnitPrefices[b_pfx] + " ");
+
+		int power = heater.quantizedOutput_Wh;
+
+		int p_pfx = 0;
+		for (; power > 1000 && p_pfx < GUITools.UnitPrefices.length - 1; ++p_pfx)
+			power /= 1000;
+
+		String output = String.format("Output (%d): %d%sWatt", heater.heatTargets(), power, GUITools.UnitPrefices[p_pfx]);
+
+		fontRenderer.drawString(content, w + 35, h + 12, 0x3c3c3c);
 		fontRenderer.drawString(fuel, w + 105, h + 30, 0x3c3c3c);
 		fontRenderer.drawString(ash, w + 105, h + 50, 0x3c3c3c);
-		fontRenderer.drawString(targets, w + 35, h + 67, 0x3c3c3c);
-		fontRenderer.drawString(content, w + 35, h + 12, 0x3c3c3c);
+		fontRenderer.drawString(output, w + 35, h + 67, 0x3c3c3c);
 
 		PlayerInventory.drawInventory(this, width, height, ySize - PlayerInventory.invYSize);
 	}

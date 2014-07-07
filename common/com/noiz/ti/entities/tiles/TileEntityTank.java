@@ -3,51 +3,57 @@ package com.noiz.ti.entities.tiles;
 import java.util.List;
 
 import net.minecraft.nbt.NBTTagCompound;
+import TFC.Core.TFC_Climate;
 import TFC.Core.TFC_Time;
 
 import com.noiz.ti.TerraIndustrialisBlocks;
 import com.noiz.ti.entities.tiles.multiblock.TileEntityRectMultiblock;
-import com.noiz.ti.handlers.client.GuiHandler;
+import com.noiz.ti.gui.GUITools;
 import com.noiz.ti.physics.IHeatSource;
 import com.noiz.ti.physics.IHeatable;
 import com.noiz.ti.physics.SolidMaterial;
-import com.noiz.ti.physics.Thermal;
+import com.noiz.ti.physics.Thermodynamics;
+import com.noiz.ti.physics.Units;
+import com.noiz.ti.physics.Water;
 
 public class TileEntityTank extends TileEntityRectMultiblock implements IHeatable {
 
 	public static final int UpdatePeriodTicks = 40;
-	public static final float TicksPerLitre = 40;
 
 	public static final float LiquidPerBucket = 10f;
 	public static final float CapacityPerBlock = 100f;
 
-	public static final float MaxPressure = 1000f;
-	public static final float PressureDecay = 10f;
-	public static final float MinTemperatureBoiling = 100f;
-	public static final float MaxTemperature = 500f;
+	public static final float MaxPressure = Units.psi2pascal(1000);
+	private static final float MaxTemperature = Water.vaporTemperature(MaxPressure);
 
-	public static final float HeatTransferFactor = .04f;
-	public static final float BoilAmountFactor = .005f;
-	public static final float PressureAmountFactor = 20f;
+	public static final float Efficiency = .8f;
+	public static final float LossAreaCoefficient = 1f / 3000;
 
 	private float waterAmount = 0;
-	private float pressure = 0;
 	private float temperature = 0;
-	private float deltaT = 0;
-	private long nextUpdate = 0;
+	// amount of energy taken since last update.
+	private float influx = 0;
+
+	private long lastUpdate = 0;
 
 	public int quantizedTemperature = 0;
 	public int quantizedWater = 0;
-	public int quantizedPressure = 0;
+
+	public float pressure() {
+		return Water.vaporPressure(temperature);
+	}
 
 	public int capacity() {
 		return (int) (structureBlockCount() * CapacityPerBlock);
 	}
 
+	public int water() {
+		return (int) waterAmount;
+	}
+
 	@Override
-	public void setTemperatureAfterHeatTransfer(float temperature) {
-		this.temperature = temperature;
-		quantizeUIGaugeValues();
+	public void doHeatTransfer(float energy) {
+		influx += energy;
 	}
 
 	@Override
@@ -61,7 +67,7 @@ public class TileEntityTank extends TileEntityRectMultiblock implements IHeatabl
 	}
 
 	public String status() {
-		if (temperature > MinTemperatureBoiling)
+		if (temperature > 100f)
 			return waterAmount > 0 ? "Boiling" : "Heating";
 		return "Idle";
 	}
@@ -73,7 +79,7 @@ public class TileEntityTank extends TileEntityRectMultiblock implements IHeatabl
 	public void addBucket() {
 		waterAmount = Math.min(structureBlockCount() * CapacityPerBlock, waterAmount + LiquidPerBucket);
 
-		quantizedWater = (int) (waterAmount * GuiHandler.GUI_GaugeScale / (structureBlockCount() * CapacityPerBlock));
+		quantizedWater = (int) (waterAmount * GUITools.GUI_GaugeScale / (structureBlockCount() * CapacityPerBlock));
 		onInventoryChanged();
 	}
 
@@ -87,7 +93,7 @@ public class TileEntityTank extends TileEntityRectMultiblock implements IHeatabl
 
 	@Override
 	protected void onStructureDismantle() {
-		pressure = temperature = 0;
+		temperature = 0;
 
 		List<TileEntityRectMultiblock> members = structureMembers(TerraIndustrialisBlocks.blockTank.blockID);
 		if (members.size() == 0)
@@ -98,7 +104,6 @@ public class TileEntityTank extends TileEntityRectMultiblock implements IHeatabl
 			TileEntityTank tank = (TileEntityTank) member;
 			tank.waterAmount = waterPerMember;
 			tank.temperature = 0;
-			tank.pressure = 0;
 
 			tank.quantizeUIGaugeValues();
 		}
@@ -113,32 +118,46 @@ public class TileEntityTank extends TileEntityRectMultiblock implements IHeatabl
 		if (worldObj.isRemote || !isMaster())
 			return;
 
-		if (TFC_Time.getTotalTicks() < nextUpdate)
+		long now = TFC_Time.getTotalTicks();
+		float deltaTime = timeSinceLastUpdate(now);
+		if (deltaTime == 0)
 			return;
-		nextUpdate = TFC_Time.getTotalTicks() + UpdatePeriodTicks;
 
-		final float p = pressure;
 		final float w = waterAmount;
 		final float t = temperature;
-
 		try {
-			pressure = Math.max(0, pressure - PressureDecay);
-			waterAmount = Math.max(0, waterAmount);
+			float minTemperature = TFC_Climate.getBioTemperature(xCoord, zCoord);
 
-			temperature = Math.max(0, Math.min(MaxTemperature, temperature + deltaT));
-			deltaT = Thermal.airEnergyAbsorption(.02f, temperature, structureBlockCount(), SolidMaterial.Steel, xCoord, zCoord);
+			if (waterAmount > 0) {
+				float dt = Efficiency * influx / (waterAmount * Water.SpecificHeat);
+				temperature += dt;
+			}
+			influx = 0;
 
-			float maxWater = temperature > MinTemperatureBoiling ? BoilAmountFactor * temperature : 0;
-			float delta = Math.min(waterAmount, maxWater);
-			waterAmount -= delta;
-			pressure = Math.min(MaxPressure, pressure + delta * PressureAmountFactor);
+			float area = LossAreaCoefficient * structureBlockCount();
+			temperature -= Thermodynamics.airEnergyAbsorption(deltaTime, temperature, area, SolidMaterial.Steel, xCoord, zCoord);
+			temperature = Math.max(minTemperature, temperature);
 		} finally {
-			if (p != pressure || w != waterAmount || t != temperature) {
+			if (w != waterAmount || t != temperature) {
 				quantizeUIGaugeValues();
 				onInventoryChanged();
 				worldObj.markBlockForUpdate(xCoord, yCoord, zCoord);
 			}
 		}
+	}
+
+	private float timeSinceLastUpdate(long now) {
+		if (lastUpdate == 0) {
+			lastUpdate = now;
+			return 0;
+		}
+
+		long delta = now - lastUpdate;
+		if (delta < UpdatePeriodTicks)
+			return 0;
+
+		lastUpdate = now;
+		return delta * Units.SecondsPerTick;
 	}
 
 	@Override
@@ -149,7 +168,6 @@ public class TileEntityTank extends TileEntityRectMultiblock implements IHeatabl
 			return;
 
 		waterAmount = par1nbtTagCompound.getFloat("Water");
-		pressure = par1nbtTagCompound.getFloat("Pressure");
 		temperature = par1nbtTagCompound.getFloat("Temperature");
 
 		quantizeUIGaugeValues();
@@ -163,13 +181,11 @@ public class TileEntityTank extends TileEntityRectMultiblock implements IHeatabl
 			return;
 
 		par1nbtTagCompound.setFloat("Water", waterAmount);
-		par1nbtTagCompound.setFloat("Pressure", pressure);
 		par1nbtTagCompound.setFloat("Temperature", temperature);
 	}
 
 	private void quantizeUIGaugeValues() {
-		quantizedTemperature = (int) (temperature * GuiHandler.GUI_GaugeScale / MaxTemperature);
-		quantizedWater = (int) (waterAmount * GuiHandler.GUI_GaugeScale / (structureBlockCount() * CapacityPerBlock));
-		quantizedPressure = (int) (pressure * GuiHandler.GUI_GaugeScale / MaxPressure);
+		quantizedTemperature = GUITools.quantize(temperature, MaxTemperature);
+		quantizedWater = GUITools.quantize(waterAmount, (structureBlockCount() * CapacityPerBlock));
 	}
 }

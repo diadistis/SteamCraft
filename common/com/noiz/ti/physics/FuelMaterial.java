@@ -2,9 +2,9 @@ package com.noiz.ti.physics;
 
 public enum FuelMaterial {
 	//
-	Charcoal(perHour2perSec(1), MJ(30), 500, .001f),
+	Charcoal(.1f, Units.Mega(30), 350, 1f),
 	//
-	Coal(perHour2perSec(1), MJ(31), 600, .001f),
+	Coal(.1f, Units.Mega(31), 400, 1f),
 	//
 	;
 
@@ -28,13 +28,5 @@ public enum FuelMaterial {
 
 	public float energyBurning(float kilos) {
 		return burningEnergyContent * kilos;
-	}
-
-	static float MJ(float mj) {
-		return mj * 1000000;
-	}
-
-	static float perHour2perSec(float rate) {
-		return rate / 3600;
 	}
 }

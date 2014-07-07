@@ -18,7 +18,6 @@ public class ContainerTank extends Container {
 
 	private int quantizedTemperature;
 	private int quantizedWater;
-	private int quantizedPressure;
 
 	public ContainerTank(InventoryPlayer inventoryplayer, TileEntityTank tank, World world, int x, int y, int z) {
 
@@ -46,7 +45,6 @@ public class ContainerTank extends Container {
 		super.addCraftingToCrafters(par1iCrafting);
 		par1iCrafting.sendProgressBarUpdate(this, 0, tank.quantizedTemperature);
 		par1iCrafting.sendProgressBarUpdate(this, 1, tank.quantizedWater);
-		par1iCrafting.sendProgressBarUpdate(this, 2, tank.quantizedPressure);
 	}
 
 	@Override
@@ -61,14 +59,10 @@ public class ContainerTank extends Container {
 
 			if (quantizedWater != tank.quantizedWater)
 				icrafting.sendProgressBarUpdate(this, 1, tank.quantizedWater);
-
-			if (quantizedPressure != tank.quantizedPressure)
-				icrafting.sendProgressBarUpdate(this, 2, tank.quantizedPressure);
 		}
 
 		quantizedTemperature = tank.quantizedTemperature;
 		quantizedWater = tank.quantizedWater;
-		quantizedPressure = tank.quantizedPressure;
 	}
 
 	@SideOnly(Side.CLIENT)
@@ -77,8 +71,6 @@ public class ContainerTank extends Container {
 			tank.quantizedTemperature = par2;
 		else if (par1 == 1)
 			tank.quantizedWater = par2;
-		else if (par1 == 2)
-			tank.quantizedPressure = par2;
 	}
 
 	@Override

@@ -1,7 +1,7 @@
 package com.noiz.ti.physics;
 
 public interface IHeatable {
-	public void setTemperatureAfterHeatTransfer(float temperature);
+	public void doHeatTransfer(float energy);
 
 	public float temperature();
 
