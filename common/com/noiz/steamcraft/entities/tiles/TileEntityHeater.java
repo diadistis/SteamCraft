@@ -264,8 +264,13 @@ public class TileEntityHeater extends TileEntityRectMultiblock implements IInven
 				}
 
 				float delta = 0;
-				for (IHeatable target : heatables)
-					delta -= target.transferHeat(structureBlockCount(), temperature);
+				for (IHeatable target : heatables) {
+					TileEntity entity = (TileEntity) target;
+					if (entity.isInvalid() || (entity instanceof TileEntityRectMultiblock && !((TileEntityRectMultiblock) entity).isMaster()))
+						ticksSinceLastScan = HeatablesScanPeriod;
+					else
+						delta -= target.transferHeat(structureBlockCount(), temperature);
+				}
 				if (delta > 0)
 					temperature -= Math.min(temperature / 2, delta / heatables.size());
 			}

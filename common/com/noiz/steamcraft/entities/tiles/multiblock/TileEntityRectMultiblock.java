@@ -122,7 +122,7 @@ public abstract class TileEntityRectMultiblock extends TileEntity {
 		worldObj.markBlockForUpdate(xCoord, yCoord, zCoord);
 	}
 
-	protected boolean isMaster() {
+	public boolean isMaster() {
 		return structureID == null || (master[0] == xCoord && master[1] == yCoord && master[2] == zCoord);
 	}
 
