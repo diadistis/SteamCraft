@@ -1,5 +1,8 @@
 package com.noiz.steamcraft.entities.tiles;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.Item;
@@ -10,6 +13,7 @@ import net.minecraft.network.packet.Packet132TileEntityData;
 import TFC.TFCBlocks;
 import TFC.Core.TFC_Time;
 
+import com.noiz.steamcraft.SteamCraftBlocks;
 import com.noiz.steamcraft.entities.tiles.multiblock.TileEntityRectMultiblock;
 import com.noiz.steamcraft.handlers.client.GuiHandler;
 
@@ -33,6 +37,8 @@ public class TileEntityHeater extends TileEntityRectMultiblock implements IInven
 	private final ItemStack items[] = { new ItemStack(Item.coal, 0), new ItemStack(TFCBlocks.Dirt, 0) };
 	private final int itemCounts[] = { 0, 0 };
 
+	private final List<IHeatable> heatables = new ArrayList<>();
+
 	/**
 	 * when <code>true</code> the heater consumes a fuel item that has been
 	 * removed from its inventory.
@@ -55,17 +61,17 @@ public class TileEntityHeater extends TileEntityRectMultiblock implements IInven
 	}
 
 	public int getMaxItemCount(int pos) {
-		return MaxItemsPerBlock[pos];
+		return MaxItemsPerBlock[pos] * structureBlockCount();
 	}
 
 	public float temperature() {
 		return temperature;
 	}
 
-	public void addFuelItems(int count) {
-		count = Math.min(count, MaxItemsPerBlock[FuelSlot] - itemCounts[FuelSlot]);
-		itemCounts[FuelSlot] += count;
-		items[FuelSlot].stackSize = Math.min(itemCounts[FuelSlot], ItemsPerInvSlot);
+	public void addItems(int pos, int count) {
+		count = Math.min(count, MaxItemsPerBlock[pos] - itemCounts[pos]);
+		itemCounts[pos] += count;
+		items[pos].stackSize = Math.min(itemCounts[pos], ItemsPerInvSlot);
 	}
 
 	@Override
@@ -151,14 +157,43 @@ public class TileEntityHeater extends TileEntityRectMultiblock implements IInven
 
 	@Override
 	protected void mergeThisMasterToNextOne(TileEntityRectMultiblock nextMaster) {
-		// TODO Auto-generated method stub
+		TileEntityHeater masterHeater = (TileEntityHeater) nextMaster;
 
+		masterHeater.addItems(0, itemCounts[0]);
+		masterHeater.addItems(1, itemCounts[1]);
+
+		masterHeater.quantizeUIGaugeValues();
 	}
 
 	@Override
 	protected void onStructureDismantle() {
-		// TODO Auto-generated method stub
+		temperature = 0;
 
+		List<TileEntityRectMultiblock> members = structureMembers(SteamCraftBlocks.blockHeater.blockID);
+		if (members.size() == 0)
+			return;
+
+		int fuelPerMember = itemCounts[FuelSlot] / members.size();
+		int ashesPerMember = itemCounts[AshesSlot] / members.size();
+
+		int remainderFuel = itemCounts[FuelSlot] - fuelPerMember * members.size();
+		int remainderAshes = itemCounts[AshesSlot] - ashesPerMember * members.size();
+
+		boolean firstMember = true;
+		for (TileEntityRectMultiblock member : members) {
+			TileEntityHeater heater = (TileEntityHeater) member;
+
+			if (firstMember) {
+				firstMember = false;
+				setItemCount(FuelSlot, fuelPerMember + remainderFuel);
+				setItemCount(AshesSlot, ashesPerMember + remainderAshes);
+			} else {
+				setItemCount(FuelSlot, fuelPerMember);
+				setItemCount(AshesSlot, ashesPerMember);
+			}
+
+			heater.quantizeUIGaugeValues();
+		}
 	}
 
 	@Override
@@ -169,6 +204,13 @@ public class TileEntityHeater extends TileEntityRectMultiblock implements IInven
 
 	@Override
 	public void updateEntity() {
+		if (!isMaster()) {
+			TileEntityHeater master = master();
+			if (master != null)
+				updateFireIcon(master.temperature > 0);
+			return;
+		}
+
 		if (worldObj.isRemote)
 			return;
 
@@ -200,7 +242,15 @@ public class TileEntityHeater extends TileEntityRectMultiblock implements IInven
 				temperatureStepTime = TFC_Time.getTotalTicks() + TicksToTempIncr;
 			}
 
-			updateFireIcon();
+			if (temperature > 0) {
+				float delta = 0;
+				for (IHeatable target : heatables)
+					delta -= target.transferHeat(structureBlockCount(), temperature);
+				if (delta > 0)
+					temperature -= Math.min(temperature / 2, delta / heatables.size());
+			}
+
+			updateFireIcon(temperature > 0);
 		} finally {
 			if (t != temperature || a != itemCounts[AshesSlot] || f != fuelExpirationTime) {
 				worldObj.markBlockForUpdate(xCoord, yCoord, zCoord);
@@ -210,11 +260,11 @@ public class TileEntityHeater extends TileEntityRectMultiblock implements IInven
 		}
 	}
 
-	private void updateFireIcon() {
+	private void updateFireIcon(boolean onFire) {
 		int metadata = worldObj.getBlockMetadata(xCoord, yCoord, zCoord);
 		int side = 7 & metadata;
 
-		metadata = side | (temperature > 0 ? 8 : 0);
+		metadata = side | (onFire ? 8 : 0);
 		worldObj.setBlockMetadataWithNotify(xCoord, yCoord, zCoord, metadata, 3);
 	}
 
@@ -252,7 +302,7 @@ public class TileEntityHeater extends TileEntityRectMultiblock implements IInven
 	@Override
 	public void onDataPacket(INetworkManager net, Packet132TileEntityData pkt) {
 		readFromNBT(pkt.data);
-		updateFireIcon();
+		updateFireIcon(temperature > 0);
 	}
 
 	private void quantizeUIGaugeValues() {

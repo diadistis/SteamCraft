@@ -31,10 +31,6 @@ public class GuiHeater extends GuiContainer {
 		super.onGuiClosed();
 	}
 
-	protected void drawGuiContainerForegroundLayer() {
-		fontRenderer.drawString("Fuel", 8, (ySize - 96) + 2, 0x404040);
-	}
-
 	@Override
 	protected void drawGuiContainerBackgroundLayer(float f, int i, int j) {
 		TFC_Core.bindTexture(new ResourceLocation("steamcraft:textures/gui/gui_heater.png"));
@@ -45,10 +41,10 @@ public class GuiHeater extends GuiContainer {
 
 		drawTexturedModalRect(w + 8, h + 64 - heater.quantizedTemperature, 185, 31, 15, 6);
 
-		int fuel_pc = (100 * heater.getItemCount(TileEntityHeater.FuelSlot)) / heater.getMaxItemCount(TileEntityHeater.FuelSlot);
+		int fuel_pc = (int) Math.ceil((100f * heater.getItemCount(TileEntityHeater.FuelSlot)) / heater.getMaxItemCount(TileEntityHeater.FuelSlot));
 		String fuel = String.format("%d (%d%%)", heater.getItemCount(TileEntityHeater.FuelSlot), fuel_pc);
 
-		int ash_pc = (100 * heater.getItemCount(TileEntityHeater.AshesSlot)) / heater.getMaxItemCount(TileEntityHeater.AshesSlot);
+		int ash_pc = (int) Math.ceil((100f * heater.getItemCount(TileEntityHeater.AshesSlot)) / heater.getMaxItemCount(TileEntityHeater.AshesSlot));
 		String ash = String.format("%d (%d%%)", heater.getItemCount(TileEntityHeater.AshesSlot), ash_pc);
 
 		fontRenderer.drawString(fuel, w + 105, h + 30, 0x3c3c3c);

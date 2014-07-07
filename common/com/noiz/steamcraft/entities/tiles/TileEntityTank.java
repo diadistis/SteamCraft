@@ -97,7 +97,7 @@ public class TileEntityTank extends TileEntityRectMultiblock implements IHeatabl
 
 	@Override
 	public void updateEntity() {
-		if (worldObj.isRemote)
+		if (worldObj.isRemote || !isMaster())
 			return;
 
 		if (TFC_Time.getTotalTicks() < pressureNextUpdate)
