@@ -5,6 +5,7 @@ import net.minecraftforge.common.MinecraftForge;
 import com.noiz.ti.TerraIndustrialisBlocks;
 import com.noiz.ti.handlers.client.GuiHandler;
 import com.noiz.ti.render.RenderHeater;
+import com.noiz.ti.render.RenderPipe;
 import com.noiz.ti.render.RenderTank;
 
 import cpw.mods.fml.client.registry.RenderingRegistry;
@@ -22,5 +23,6 @@ public class ClientProxy extends CommonProxy {
 	public void registerRenderInformation() {
 		RenderingRegistry.registerBlockHandler(TerraIndustrialisBlocks.blockHeaterRenderId = RenderingRegistry.getNextAvailableRenderId(), new RenderHeater());		
 		RenderingRegistry.registerBlockHandler(TerraIndustrialisBlocks.blockTankRenderId = RenderingRegistry.getNextAvailableRenderId(), new RenderTank());		
+		RenderingRegistry.registerBlockHandler(TerraIndustrialisBlocks.blockPipeRenderId = RenderingRegistry.getNextAvailableRenderId(), new RenderPipe());		
 	}
 }
