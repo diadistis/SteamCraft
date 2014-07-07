@@ -201,6 +201,29 @@ public abstract class TileEntityRectMultiblock extends TileEntity {
 		return struct.blockCount();
 	}
 
+	protected int baseArea() {
+		if (structureID == null)
+			return 1;
+		Structure struct = structures.get(structureID);
+		if (struct == null)
+			return 1;
+		return struct.baseArea();
+	}
+
+	protected int touchingHorizontalArea(TileEntityRectMultiblock other) {
+		if (structureID == null)
+			return 1;
+		Structure struct1 = structures.get(structureID);
+		if (struct1 == null)
+			return 1;
+		if (other.structureID == null)
+			return 1;
+		Structure struct2 = structures.get(structureID);
+		if (struct2 == null)
+			return 1;
+		return struct1.touchingHorizontalArea(struct2);
+	}
+
 	private static TileEntityRectMultiblock getStructureBlocksAndMaster(World world, Structure struct, int blockID, List<TileEntityRectMultiblock> entities, Set<String> structures) {
 		int[] master_coords = struct.masterCoords();
 		TileEntityRectMultiblock master = null;

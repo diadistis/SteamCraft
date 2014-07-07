@@ -17,6 +17,7 @@ import com.noiz.ti.entities.tiles.TileEntityHeater;
 
 public class GuiHeater extends GuiContainer {
 
+	private static final String[] UnitPrefices = { "", "k", "M", "G" };
 	private TileEntityHeater heater;
 
 	public GuiHeater(InventoryPlayer player, TileEntityHeater heater, World world, int x, int y, int z) {
@@ -40,7 +41,7 @@ public class GuiHeater extends GuiContainer {
 		int h = (height - ySize) / 2;
 		drawTexturedModalRect(w, h, 0, 0, xSize, ySize);
 
-		drawTexturedModalRect(w + 8, h + 64 - heater.quantizedTemperature, 185, 31, 15, 6);
+		drawTexturedModalRect(w + 8, h + 64 - heater.quantizedEnergy, 185, 31, 15, 6);
 
 		int fuel_pc = (int) Math.ceil((100f * heater.getItemCount(TileEntityHeater.FuelSlot)) / heater.getMaxItemCount(TileEntityHeater.FuelSlot));
 		String fuel = String.format("%d (%d%%)", heater.getItemCount(TileEntityHeater.FuelSlot), fuel_pc);
@@ -52,9 +53,16 @@ public class GuiHeater extends GuiContainer {
 		if (heater.heatTargets() > 0)
 			targets = String.format("Targets: %d", heater.heatTargets());
 
+		float nrg = heater.energy();
+		int pfx = 0;
+		for (; nrg > 1000 && pfx < UnitPrefices.length - 1; ++pfx)
+			nrg /= 1000;
+		String content = String.format("Energy: %.1f%sJ", nrg, UnitPrefices[pfx]);
+
 		fontRenderer.drawString(fuel, w + 105, h + 30, 0x3c3c3c);
 		fontRenderer.drawString(ash, w + 105, h + 50, 0x3c3c3c);
 		fontRenderer.drawString(targets, w + 35, h + 67, 0x3c3c3c);
+		fontRenderer.drawString(content, w + 35, h + 12, 0x3c3c3c);
 
 		PlayerInventory.drawInventory(this, width, height, ySize - PlayerInventory.invYSize);
 	}

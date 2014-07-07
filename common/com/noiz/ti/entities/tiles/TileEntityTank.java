@@ -8,10 +8,14 @@ import TFC.Core.TFC_Time;
 import com.noiz.ti.TerraIndustrialisBlocks;
 import com.noiz.ti.entities.tiles.multiblock.TileEntityRectMultiblock;
 import com.noiz.ti.handlers.client.GuiHandler;
+import com.noiz.ti.physics.IHeatSource;
+import com.noiz.ti.physics.IHeatable;
+import com.noiz.ti.physics.SolidMaterial;
+import com.noiz.ti.physics.Thermal;
 
 public class TileEntityTank extends TileEntityRectMultiblock implements IHeatable {
 
-	public static final int PressureUpdatePeriodTicks = 40;
+	public static final int UpdatePeriodTicks = 40;
 	public static final float TicksPerLitre = 40;
 
 	public static final float LiquidPerBucket = 10f;
@@ -30,7 +34,7 @@ public class TileEntityTank extends TileEntityRectMultiblock implements IHeatabl
 	private float pressure = 0;
 	private float temperature = 0;
 	private float deltaT = 0;
-	private long pressureNextUpdate = 0;
+	private long nextUpdate = 0;
 
 	public int quantizedTemperature = 0;
 	public int quantizedWater = 0;
@@ -41,10 +45,19 @@ public class TileEntityTank extends TileEntityRectMultiblock implements IHeatabl
 	}
 
 	@Override
-	public float transferHeat(int blocks, float temperature) {
-		float deltaT = (temperature - this.temperature) * HeatTransferFactor;
-		this.deltaT = Math.max(0, Math.min(MaxTemperature, this.deltaT + deltaT));
-		return deltaT;
+	public void setTemperatureAfterHeatTransfer(float temperature) {
+		this.temperature = temperature;
+		quantizeUIGaugeValues();
+	}
+
+	@Override
+	public float temperature() {
+		return temperature;
+	}
+
+	@Override
+	public int area(IHeatSource touchingSurface) {
+		return touchingHorizontalArea((TileEntityRectMultiblock) touchingSurface);
 	}
 
 	public String status() {
@@ -100,9 +113,9 @@ public class TileEntityTank extends TileEntityRectMultiblock implements IHeatabl
 		if (worldObj.isRemote || !isMaster())
 			return;
 
-		if (TFC_Time.getTotalTicks() < pressureNextUpdate)
+		if (TFC_Time.getTotalTicks() < nextUpdate)
 			return;
-		pressureNextUpdate = TFC_Time.getTotalTicks() + PressureUpdatePeriodTicks;
+		nextUpdate = TFC_Time.getTotalTicks() + UpdatePeriodTicks;
 
 		final float p = pressure;
 		final float w = waterAmount;
@@ -113,8 +126,7 @@ public class TileEntityTank extends TileEntityRectMultiblock implements IHeatabl
 			waterAmount = Math.max(0, waterAmount);
 
 			temperature = Math.max(0, Math.min(MaxTemperature, temperature + deltaT));
-			deltaT = transferHeat(structureBlockCount(), 0); // next round's
-																// decay
+			deltaT = Thermal.airEnergyAbsorption(.02f, temperature, structureBlockCount(), SolidMaterial.Steel, xCoord, zCoord);
 
 			float maxWater = temperature > MinTemperatureBoiling ? BoilAmountFactor * temperature : 0;
 			float delta = Math.min(waterAmount, maxWater);

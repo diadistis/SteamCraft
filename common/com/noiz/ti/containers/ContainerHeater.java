@@ -16,7 +16,7 @@ import cpw.mods.fml.relauncher.SideOnly;
 public class ContainerHeater extends Container {
 	private TileEntityHeater heater;
 
-	private int quantizedTemperature;
+	private int quantizedEnergy;
 	private int fuelCount;
 	private int ashCount;
 	private int heatTargets;
@@ -48,7 +48,7 @@ public class ContainerHeater extends Container {
 	@Override
 	public void addCraftingToCrafters(ICrafting par1iCrafting) {
 		super.addCraftingToCrafters(par1iCrafting);
-		par1iCrafting.sendProgressBarUpdate(this, 0, heater.quantizedTemperature);
+		par1iCrafting.sendProgressBarUpdate(this, 0, heater.quantizedEnergy);
 		par1iCrafting.sendProgressBarUpdate(this, 1, heater.getItemCount(TileEntityHeater.FuelSlot));
 		par1iCrafting.sendProgressBarUpdate(this, 2, heater.getItemCount(TileEntityHeater.AshesSlot));
 		par1iCrafting.sendProgressBarUpdate(this, 3, heater.heatTargets());
@@ -61,8 +61,8 @@ public class ContainerHeater extends Container {
 		for (int i = 0; i < this.crafters.size(); ++i) {
 			ICrafting icrafting = (ICrafting) this.crafters.get(i);
 
-			if (quantizedTemperature != heater.quantizedTemperature)
-				icrafting.sendProgressBarUpdate(this, 0, heater.quantizedTemperature);
+			if (quantizedEnergy != heater.quantizedEnergy)
+				icrafting.sendProgressBarUpdate(this, 0, heater.quantizedEnergy);
 
 			if (fuelCount != heater.getItemCount(TileEntityHeater.FuelSlot))
 				icrafting.sendProgressBarUpdate(this, 1, heater.getItemCount(TileEntityHeater.FuelSlot));
@@ -74,7 +74,7 @@ public class ContainerHeater extends Container {
 				icrafting.sendProgressBarUpdate(this, 3, heater.heatTargets());
 		}
 
-		quantizedTemperature = heater.quantizedTemperature;
+		quantizedEnergy = heater.quantizedEnergy;
 		fuelCount = heater.getItemCount(TileEntityHeater.FuelSlot);
 		ashCount = heater.getItemCount(TileEntityHeater.AshesSlot);
 		heatTargets = heater.heatTargets();
@@ -83,7 +83,7 @@ public class ContainerHeater extends Container {
 	@SideOnly(Side.CLIENT)
 	public void updateProgressBar(int par1, int par2) {
 		if (par1 == 0)
-			heater.quantizedTemperature = par2;
+			heater.quantizedEnergy = par2;
 		if (par1 == 1)
 			heater.setItemCount(TileEntityHeater.FuelSlot, par2);
 		if (par1 == 2)

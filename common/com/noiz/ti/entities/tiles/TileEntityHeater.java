@@ -16,50 +16,50 @@ import TFC.TFCBlocks;
 import TFC.Core.TFC_Time;
 
 import com.noiz.ti.TerraIndustrialisBlocks;
+import com.noiz.ti.TerraIndustrialisConstants;
 import com.noiz.ti.entities.tiles.multiblock.TileEntityRectMultiblock;
 import com.noiz.ti.handlers.client.GuiHandler;
+import com.noiz.ti.physics.FuelMaterial;
+import com.noiz.ti.physics.IHeatSource;
+import com.noiz.ti.physics.IHeatable;
+import com.noiz.ti.physics.SolidMaterial;
+import com.noiz.ti.physics.Thermal;
 
-public class TileEntityHeater extends TileEntityRectMultiblock implements IInventory {
+public class TileEntityHeater extends TileEntityRectMultiblock implements IInventory, IHeatSource {
+
+	public static final int UpdatePeriodTicks = 20;
+	public static final int HeatablesScanPeriod = 40;
 
 	public static final int FuelSlot = 0;
 	public static final int AshesSlot = 1;
 
 	public static final int FuelPerBlock = 64;
 	public static final int AshesPerBlock = 64;
-	public static final int ItemsPerInvSlot = 32;
+	public static final int ItemsPerInventorySlot = 32;
 
-	public static final int TicksPerFuelItem = 30;
-	public static final int TicksToTempIncr = 50;
-	public static final float TempIncrStep = 150;
-	public static final float MaxTemperature = 4000f;
+	public static final float MaxEnergy = 1000000000;
 	public static final float AshPropability = .1f;
 
-	public static final int HeatablesScanPeriod = 40;
+	public static final FuelMaterial Fuel = FuelMaterial.Coal;
+	public static final SolidMaterial StructureMaterial = SolidMaterial.Steel;
 
 	private static final int[] MaxItemsPerBlock = { FuelPerBlock, AshesPerBlock };
-
-	private final ItemStack items[] = { new ItemStack(Item.coal, 0), new ItemStack(TFCBlocks.Dirt, 0) };
 	private final int itemCounts[] = { 0, 0 };
+	private final ItemStack items[] = { new ItemStack(Item.coal, 0), new ItemStack(TFCBlocks.Dirt, 0) };
 
-	private final Set<IHeatable> heatables = new HashSet<>();
+	private IHeatable[] heatables = null;
 	private int heatTargetsOverride = 0;
 
-	/**
-	 * when <code>true</code> the heater consumes a fuel item that has been
-	 * removed from its inventory.
-	 */
-	private boolean consumingExistingFuel = false;
-	private long fuelExpirationTime = 0;
+	private float burningFuelMass = .0f;
+	private float thermalEnergyContent = 0;
 
-	private float temperature = 0;
-	private long temperatureStepTime = 0;
+	private long lastScan = 0;
+	private long lastUpdate = 0;
 
-	private int ticksSinceLastScan = 0;
-
-	public int quantizedTemperature = 0;
+	public int quantizedEnergy = 0;
 
 	public int heatTargets() {
-		return heatables.size() == 0 ? heatTargetsOverride : heatables.size();
+		return heatables == null ? heatTargetsOverride : heatables.length;
 	}
 
 	public void setHeatTargets(int no) {
@@ -72,21 +72,27 @@ public class TileEntityHeater extends TileEntityRectMultiblock implements IInven
 
 	public void setItemCount(int pos, int count) {
 		itemCounts[pos] = count;
-		items[pos].stackSize = Math.min(ItemsPerInvSlot, itemCounts[pos]);
+		items[pos].stackSize = Math.min(ItemsPerInventorySlot, itemCounts[pos]);
 	}
 
 	public int getMaxItemCount(int pos) {
 		return MaxItemsPerBlock[pos] * structureBlockCount();
 	}
 
+	@Override
+	public float energy() {
+		return thermalEnergyContent;
+	}
+
+	@Override
 	public float temperature() {
-		return temperature;
+		return isHeaterActive() ? Fuel.burningTemperature : 0;
 	}
 
 	public void addItems(int pos, int count) {
 		count = Math.min(count, MaxItemsPerBlock[pos] - itemCounts[pos]);
 		itemCounts[pos] += count;
-		items[pos].stackSize = Math.min(itemCounts[pos], ItemsPerInvSlot);
+		items[pos].stackSize = Math.min(itemCounts[pos], ItemsPerInventorySlot);
 	}
 
 	@Override
@@ -98,7 +104,7 @@ public class TileEntityHeater extends TileEntityRectMultiblock implements IInven
 	public ItemStack getStackInSlot(int pos) {
 		if (pos < 0 || pos > 1 || itemCounts[pos] == 0) //
 			return null;
-		items[pos].stackSize = Math.min(itemCounts[pos], ItemsPerInvSlot);
+		items[pos].stackSize = Math.min(itemCounts[pos], ItemsPerInventorySlot);
 		return items[pos];
 	}
 
@@ -182,7 +188,7 @@ public class TileEntityHeater extends TileEntityRectMultiblock implements IInven
 
 	@Override
 	protected void onStructureDismantle() {
-		temperature = 0;
+		thermalEnergyContent = 0;
 
 		List<TileEntityRectMultiblock> members = structureMembers(TerraIndustrialisBlocks.blockHeater.blockID);
 		if (members.size() == 0)
@@ -221,63 +227,52 @@ public class TileEntityHeater extends TileEntityRectMultiblock implements IInven
 		if (!isMaster()) {
 			TileEntityHeater master = master();
 			if (master != null)
-				updateFireIcon(master.temperature > 0);
+				updateFireIcon(master);
 			return;
 		}
 
 		if (worldObj.isRemote)
 			return;
 
-		if (TFC_Time.getTotalTicks() > fuelExpirationTime)
-			consumingExistingFuel = false;
+		long now = TFC_Time.getTotalTicks();
+		float deltaTime = timeSinceLastUpdate(now);
+		if (deltaTime == 0)
+			return;
 
-		float t = temperature;
+		float e = thermalEnergyContent;
 		int a = itemCounts[AshesSlot];
 		int f = itemCounts[FuelSlot];
 		try {
-			if (!consumingExistingFuel && itemCounts[FuelSlot] > 0) {
-				boolean ashProduced = true;
-				if (temperature > 0 && AshPropability > Math.random()) {
-					if (itemCounts[AshesSlot] >= structureBlockCount() * AshesPerBlock)
-						ashProduced = false;
-					else
-						++itemCounts[AshesSlot];
-				}
-				if (ashProduced) {
-					--itemCounts[FuelSlot];
-					fuelExpirationTime = TFC_Time.getTotalTicks() + TicksPerFuelItem;
-					consumingExistingFuel = true;
-				}
-			}
+			burnFuelUpdate(deltaTime);
+			updateFireIcon(this);
 
-			if (TFC_Time.getTotalTicks() > temperatureStepTime) {
-				temperature += consumingExistingFuel ? TempIncrStep : -.8 * TempIncrStep;
-				temperature = Math.max(0, Math.min(temperature, MaxTemperature));
-				temperatureStepTime = TFC_Time.getTotalTicks() + TicksToTempIncr;
-			}
-
-			++ticksSinceLastScan;
-			if (temperature > 0) {
-				if (ticksSinceLastScan > HeatablesScanPeriod) {
-					ticksSinceLastScan = 0;
+			if (thermalEnergyContent > 0) {
+				if (lastScan > 0 && (now - lastScan) > HeatablesScanPeriod) {
+					lastScan = now;
 					scanForHeatables();
 				}
 
-				float delta = 0;
-				for (IHeatable target : heatables) {
-					TileEntity entity = (TileEntity) target;
-					if (entity.isInvalid() || (entity instanceof TileEntityRectMultiblock && !((TileEntityRectMultiblock) entity).isMaster()))
-						ticksSinceLastScan = HeatablesScanPeriod;
-					else
-						delta -= target.transferHeat(structureBlockCount(), temperature);
-				}
-				if (delta > 0)
-					temperature -= Math.min(temperature / 2, delta / heatables.size());
-			}
+				boolean ok = heatables != null && heatables.length > 0;
+				if (ok)
+					for (IHeatable target : heatables) {
+						TileEntity entity = (TileEntity) target;
+						if (entity.isInvalid() || (entity instanceof TileEntityRectMultiblock && !((TileEntityRectMultiblock) entity).isMaster())) {
+							lastScan = now - HeatablesScanPeriod - 2;
+							ok = false;
+						}
+					}
 
-			updateFireIcon(temperature > 0);
+				if (ok)
+					thermalEnergyContent -= Thermal.doEnergyTransfer(deltaTime, this, heatables, StructureMaterial);
+			}
+			System.out.println("energy (past transfer): " + thermalEnergyContent);
+
+			this.thermalEnergyContent -= Thermal.airEnergyAbsorption(deltaTime, Fuel.burningTemperature, structureBlockCount(), StructureMaterial, xCoord, zCoord);
+			this.thermalEnergyContent = Math.max(0, thermalEnergyContent);
+
+			System.out.println("energy (final): " + thermalEnergyContent);
 		} finally {
-			if (t != temperature || a != itemCounts[AshesSlot] || f != fuelExpirationTime) {
+			if (e != thermalEnergyContent || a != itemCounts[AshesSlot] || f != itemCounts[FuelSlot]) {
 				worldObj.markBlockForUpdate(xCoord, yCoord, zCoord);
 				onInventoryChanged();
 				quantizeUIGaugeValues();
@@ -285,11 +280,63 @@ public class TileEntityHeater extends TileEntityRectMultiblock implements IInven
 		}
 	}
 
-	private void updateFireIcon(boolean onFire) {
+	private float timeSinceLastUpdate(long now) {
+		if (lastUpdate == 0) {
+			lastUpdate = now;
+			return 0;
+		}
+
+		long delta = now - lastUpdate;
+		if (delta < UpdatePeriodTicks)
+			return 0;
+
+		lastUpdate = now;
+		return delta * TerraIndustrialisConstants.SecondsPerTick;
+	}
+
+	private boolean isHeaterActive() {
+		return (thermalEnergyContent > 0 || burningFuelMass > 0) || (itemCounts[AshesSlot] >= structureBlockCount() * AshesPerBlock && itemCounts[FuelSlot] > 0);
+	}
+
+	private void burnFuelUpdate(float deltaTime) {
+		if (itemCounts[AshesSlot] >= structureBlockCount() * AshesPerBlock)
+			return;
+
+		float maxBurnAmount = Fuel.amountBurning(deltaTime);
+		if (burningFuelMass < maxBurnAmount && itemCounts[FuelSlot] > 0) {
+			int maxItems = Math.max(1, (int) Math.floor((maxBurnAmount - burningFuelMass) / Fuel.kilosPerItem));
+			int nItems = Math.min(maxItems, itemCounts[FuelSlot]);
+
+			for (int i = 0; i < nItems; ++i)
+				if (AshPropability > Math.random())
+					if (!incrementAshes())
+						nItems = i + 1;
+
+			itemCounts[FuelSlot] -= nItems;
+			burningFuelMass += nItems * Fuel.kilosPerItem;
+		}
+
+		float burnAmount = Math.min(burningFuelMass, maxBurnAmount);
+		burningFuelMass -= burnAmount;
+
+		float energy = Fuel.energyBurning(burnAmount);
+		thermalEnergyContent += energy;
+		thermalEnergyContent = Math.min(MaxEnergy, thermalEnergyContent);
+		System.out.println("burn energy: " + energy + " content: " + thermalEnergyContent + " mass lest:" + burningFuelMass);
+	}
+
+	private boolean incrementAshes() {
+		if (itemCounts[AshesSlot] >= structureBlockCount() * AshesPerBlock)
+			return false;
+		++itemCounts[AshesSlot];
+		return true;
+	}
+
+	private void updateFireIcon(TileEntityHeater heater) {
 		int metadata = worldObj.getBlockMetadata(xCoord, yCoord, zCoord);
 		int side = 7 & metadata;
 
-		metadata = side | (onFire ? 8 : 0);
+		metadata = side | (heater.isHeaterActive() ? 8 : 0);
 		worldObj.setBlockMetadataWithNotify(xCoord, yCoord, zCoord, metadata, 3);
 	}
 
@@ -298,7 +345,7 @@ public class TileEntityHeater extends TileEntityRectMultiblock implements IInven
 		int[] max = { 0, 0, 0 };
 		fetchStructureCoordinates(min, max);
 
-		heatables.clear();
+		Set<IHeatable> heatables = new HashSet<>();
 		for (int x = min[0]; x <= max[0]; ++x)
 			for (int z = min[2]; z <= max[2]; ++z) {
 				TileEntity e = worldObj.getBlockTileEntity(x, yCoord + 1, z);
@@ -309,6 +356,8 @@ public class TileEntityHeater extends TileEntityRectMultiblock implements IInven
 						heatables.add((IHeatable) e);
 				}
 			}
+
+		this.heatables = heatables.toArray(new IHeatable[heatables.size()]);
 	}
 
 	@Override
@@ -323,7 +372,7 @@ public class TileEntityHeater extends TileEntityRectMultiblock implements IInven
 		if (!isMaster())
 			return;
 
-		temperature = par1NBTTagCompound.getFloat("Temperature");
+		thermalEnergyContent = par1NBTTagCompound.getFloat("NRG");
 		itemCounts[FuelSlot] = par1NBTTagCompound.getInteger("Fuel");
 		itemCounts[AshesSlot] = par1NBTTagCompound.getInteger("Ashes");
 
@@ -337,7 +386,7 @@ public class TileEntityHeater extends TileEntityRectMultiblock implements IInven
 		if (!isMaster())
 			return;
 
-		par1NBTTagCompound.setFloat("Temperature", temperature);
+		par1NBTTagCompound.setFloat("NRG", thermalEnergyContent);
 		par1NBTTagCompound.setInteger("Fuel", itemCounts[FuelSlot]);
 		par1NBTTagCompound.setInteger("Ashes", itemCounts[AshesSlot]);
 	}
@@ -345,10 +394,11 @@ public class TileEntityHeater extends TileEntityRectMultiblock implements IInven
 	@Override
 	public void onDataPacket(INetworkManager net, Packet132TileEntityData pkt) {
 		readFromNBT(pkt.data);
-		updateFireIcon(temperature > 0);
+		updateFireIcon(this);
 	}
 
 	private void quantizeUIGaugeValues() {
-		quantizedTemperature = (int) (temperature * GuiHandler.GUI_GaugeScale / MaxTemperature);
+		final float max = MaxEnergy / 100;
+		quantizedEnergy = (int) (Math.min(max, thermalEnergyContent) * GuiHandler.GUI_GaugeScale / max);
 	}
 }

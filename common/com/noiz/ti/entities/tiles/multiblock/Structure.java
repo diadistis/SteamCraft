@@ -45,4 +45,14 @@ class Structure {
 	int blockCount() {
 		return (maxCoords[0] - minCoords[0] + 1) * (maxCoords[1] - minCoords[1] + 1) * (maxCoords[2] - minCoords[2] + 1);
 	}
+
+	int baseArea() {
+		return (maxCoords[0] - minCoords[0] + 1) * (maxCoords[2] - minCoords[2] + 1);
+	}
+
+	int touchingHorizontalArea(Structure other) {
+		int x = Math.min(maxCoords[0], other.maxCoords[0]) - Math.max(minCoords[0], other.minCoords[0]) + 1;
+		int z = Math.min(maxCoords[2], other.maxCoords[2]) - Math.max(minCoords[2], other.minCoords[2]) + 1;
+		return x * z;
+	}
 }
