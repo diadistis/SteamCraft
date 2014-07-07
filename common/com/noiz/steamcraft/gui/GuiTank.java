@@ -30,11 +30,6 @@ public class GuiTank extends GuiContainer {
 		super.onGuiClosed();
 	}
 
-	protected void drawGuiContainerForegroundLayer() {
-		GL11.glColor4f(.0F, .0F, .0F, 1.0F);
-		fontRenderer.drawString("Tank", 8, (ySize - 96) + 2, 0x404040);
-	}
-
 	@Override
 	protected void drawGuiContainerBackgroundLayer(float f, int i, int j) {
 		TFC_Core.bindTexture(new ResourceLocation("steamcraft:textures/gui/gui_tank.png"));
@@ -46,6 +41,9 @@ public class GuiTank extends GuiContainer {
 		drawTexturedModalRect(w + 8, h + 64 - tank.quantizedWater, 185, 31, 15, 6);
 		drawTexturedModalRect(w + 27, h + 64 - tank.quantizedTemperature, 185, 31, 15, 6);
 		drawTexturedModalRect(w + 46, h + 64 - tank.quantizedPressure, 185, 31, 15, 6);
+
+		fontRenderer.drawString(String.format("Capacity: %dlt", tank.capacity()), w + 65, h + 15, 0x3c3c3c);
+		fontRenderer.drawString("Status:   " + tank.status(), w + 65, h + 28, 0x3c3c3c);
 
 		PlayerInventory.drawInventory(this, width, height, ySize - PlayerInventory.invYSize);
 	}

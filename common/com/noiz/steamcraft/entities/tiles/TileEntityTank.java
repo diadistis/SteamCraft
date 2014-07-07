@@ -38,6 +38,16 @@ public class TileEntityTank extends TileEntityRectMultiblock {
 
 	private int[] heaterLocation = null;
 
+	public int capacity() {
+		return (int) (structureBlockCount() * CapacityPerBlock);
+	}
+
+	public String status() {
+		if (temperature > MinTemperatureBoiling)
+			return waterAmount > 0 ? "Boiling" : "Heating";
+		return "Idle";
+	}
+
 	public boolean isFull() {
 		return waterAmount >= structureBlockCount() * CapacityPerBlock;
 	}
@@ -71,7 +81,7 @@ public class TileEntityTank extends TileEntityRectMultiblock {
 			tank.waterAmount = waterPerMember;
 			tank.temperature = 0;
 			tank.pressure = 0;
-			
+
 			tank.quantizeUIGaugeValues();
 		}
 	}
