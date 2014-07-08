@@ -72,7 +72,7 @@ public class TileEntityTank extends TileEntityRectMultiblock implements IHeatabl
 	public String status() {
 		if (temperature > 100f)
 			return waterAmount > 0 ? "Boiling" : "Heating";
-		return temperature > 0 ? "Heating" : "Idle";
+		return (waterAmount > 0 && temperature > 40) ? "Heating" : "Idle";
 	}
 
 	public boolean isFull() {

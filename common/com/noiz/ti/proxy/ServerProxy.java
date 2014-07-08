@@ -9,8 +9,7 @@ public class ServerProxy extends CommonProxy {
 
 	@Override
 	public void registerGUI() {
-		NetworkRegistry.instance().registerGuiHandler(TerraIndustrialis.instance,
-				new GuiHandlerServer());
+		NetworkRegistry.instance().registerGuiHandler(TerraIndustrialis.instance, new GuiHandlerServer());
 	}
 
 	@Override
