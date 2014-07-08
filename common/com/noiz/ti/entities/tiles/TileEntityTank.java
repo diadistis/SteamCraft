@@ -27,13 +27,12 @@ public class TileEntityTank extends TileEntityRectMultiblock implements IHeatabl
 	public static final float MaxPressure = Units.psi2pascal(1000);
 	private static final float MaxTemperature = Water.vaporTemperature(MaxPressure);
 
-	public static final float Efficiency = .8f;
 	public static final float LossAreaCoefficient = 1f / 3000;
 
 	private float waterAmount = 0;
 	private float temperature = 0;
-	// amount of energy taken since last update (paired w/ the time duration of
-	// their application).
+	// amount of energy taken since last update (paired w/ the associated
+	// maximum temperature).
 	private final List<float[]> influx = new ArrayList<>();
 
 	private long lastUpdate = 0;
@@ -54,8 +53,8 @@ public class TileEntityTank extends TileEntityRectMultiblock implements IHeatabl
 	}
 
 	@Override
-	public void doHeatTransfer(float energy, float time) {
-		influx.add(new float[] { energy, time });
+	public void doHeatTransfer(float energy, float maxTemperature) {
+		influx.add(new float[] { energy, maxTemperature });
 	}
 
 	@Override
@@ -131,10 +130,9 @@ public class TileEntityTank extends TileEntityRectMultiblock implements IHeatabl
 			float minTemperature = TFC_Climate.getBioTemperature(xCoord, zCoord);
 
 			if (waterAmount > 0) {
-				float dt = 0;
 				for (float[] et : influx)
-					dt += Efficiency * et[0] / (waterAmount * Water.SpecificHeat * et[1]);
-				temperature += dt;
+					if (temperature < et[1])
+						temperature = Math.min(et[1], temperature + et[0] / (waterAmount * Water.SpecificHeat));
 			}
 			influx.clear();
 

@@ -33,7 +33,7 @@ public class Thermodynamics {
 		}
 
 		for (int i = 0; i < heatables.length; ++i)
-			heatables[i].doHeatTransfer(transfers[i], deltaTime);
+			heatables[i].doHeatTransfer(transfers[i], srcTemp);
 
 		return totalTransfer;
 	}

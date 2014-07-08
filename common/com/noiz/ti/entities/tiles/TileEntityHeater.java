@@ -284,8 +284,9 @@ public class TileEntityHeater extends TileEntityRectMultiblock implements IInven
 			} else
 				quantizedOutput_Wh = 0;
 
-			this.thermalEnergyContent -= Thermodynamics.airEnergyAbsorption(deltaTime, Fuel.burningTemperature, cachedBlockCount / 5f, StructureMaterial, xCoord, zCoord);
-			this.thermalEnergyContent = Math.max(onFire ? .0001f : 0, thermalEnergyContent);
+			thermalEnergyContent -= Thermodynamics.airEnergyAbsorption(deltaTime, Fuel.burningTemperature, cachedBlockCount / 5f, StructureMaterial, xCoord, zCoord);
+			thermalEnergyContent = Math.min(cachedBlockCount * MaxEnergyPerBlock, thermalEnergyContent);
+			thermalEnergyContent = Math.max(onFire ? .0001f : 0, thermalEnergyContent);
 		} finally {
 			if (e != thermalEnergyContent || a != itemCounts[AshesSlot] || f != itemCounts[FuelSlot]) {
 				worldObj.markBlockForUpdate(xCoord, yCoord, zCoord);
@@ -338,7 +339,6 @@ public class TileEntityHeater extends TileEntityRectMultiblock implements IInven
 		thermalEnergyContent += energy;
 		if (energy == 0) // internal cooldown
 			thermalEnergyContent *= .97f;
-		thermalEnergyContent = Math.min(cachedBlockCount * MaxEnergyPerBlock, thermalEnergyContent);
 
 		return burnAmount > 0 && energy > 0;
 	}
