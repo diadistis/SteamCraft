@@ -27,7 +27,7 @@ public class TileEntityTank extends TileEntityRectMultiblock implements IHeatabl
 	public static final float MaxPressure = Units.psi2pascal(1000);
 	private static final float MaxTemperature = Water.vaporTemperature(MaxPressure);
 
-	public static final float LossAreaCoefficient = 1f / 3000;
+	public static final float LossAreaCoefficient = .03f;
 
 	private float waterAmount = 0;
 	private float temperature = 0;

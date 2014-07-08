@@ -7,8 +7,11 @@ import net.minecraft.item.ItemStack;
 
 public class CoalFuelSlot extends Slot {
 
-	public CoalFuelSlot(IInventory par1iInventory, int par2, int par3, int par4) {
+	private final int itemsLimit;
+
+	public CoalFuelSlot(IInventory par1iInventory, int par2, int par3, int par4, int itemsLimit) {
 		super(par1iInventory, par2, par3, par4);
+		this.itemsLimit = itemsLimit;
 	}
 
 	public boolean isItemValid(ItemStack itemstack) {
@@ -16,6 +19,6 @@ public class CoalFuelSlot extends Slot {
 	}
 
 	public int getSlotStackLimit() {
-		return 64;
+		return itemsLimit;
 	}
 }

@@ -37,7 +37,6 @@ public class TileEntityHeater extends TileEntityRectMultiblock implements IInven
 	public static final int AshesPerBlock = 64;
 	public static final int ItemsPerInventorySlot = 32;
 
-	public static final float Efficiency = .86f;
 	public static final float MaxEnergyPerBlock = 40000000; // ~ 40k BTU
 	public static final float AshPropability = .1f;
 
@@ -76,12 +75,17 @@ public class TileEntityHeater extends TileEntityRectMultiblock implements IInven
 	}
 
 	public int getItemCount(int pos) {
-		return itemCounts[pos];
+		return itemCounts[pos] + items[pos].stackSize;
 	}
 
 	public void setItemCount(int pos, int count) {
-		itemCounts[pos] = count;
-		items[pos].stackSize = Math.min(ItemsPerInventorySlot, itemCounts[pos]);
+		count = Math.min(count, cachedBlockCount * MaxItemsPerBlock[pos]);
+
+		items[pos].stackSize = count;
+		if (items[pos].stackSize > ItemsPerInventorySlot) {
+			itemCounts[pos] = items[pos].stackSize - ItemsPerInventorySlot;
+			items[pos].stackSize = ItemsPerInventorySlot;
+		}
 	}
 
 	public int getMaxItemCount(int pos) {
@@ -100,8 +104,13 @@ public class TileEntityHeater extends TileEntityRectMultiblock implements IInven
 
 	public int addItems(int pos, int count, ItemStack stack2update) {
 		count = Math.min(count, cachedBlockCount * MaxItemsPerBlock[pos] - itemCounts[pos]);
-		itemCounts[pos] += count;
-		items[pos].stackSize = Math.min(itemCounts[pos], ItemsPerInventorySlot);
+
+		items[pos].stackSize += count;
+		if (items[pos].stackSize > ItemsPerInventorySlot) {
+			itemCounts[pos] += items[pos].stackSize - ItemsPerInventorySlot;
+			items[pos].stackSize = ItemsPerInventorySlot;
+		}
+
 		if (stack2update != null)
 			stack2update.stackSize = items[pos].stackSize;
 		return count;
@@ -114,30 +123,36 @@ public class TileEntityHeater extends TileEntityRectMultiblock implements IInven
 
 	@Override
 	public ItemStack getStackInSlot(int pos) {
-		if (pos < 0 || pos > 1 || itemCounts[pos] == 0) //
+		if (pos < 0 || pos > 1 || items[pos].stackSize == 0) //
 			return null;
-		items[pos].stackSize = Math.min(itemCounts[pos], ItemsPerInventorySlot);
 		return items[pos];
 	}
 
 	@Override
 	public ItemStack decrStackSize(int pos, int count) {
-		if (pos < 0 || pos > 1)
-			return null;
-		if (items[pos] == null) //
-			return null;
+		try {
+			System.out.println("[" + (worldObj.isRemote ? "client" : "server") + "] decrStackSize(" + pos + ", " + count + ")");
+			if (pos < 0 || pos > 1)
+				return null;
 
-		ItemStack itemstack = null;
+			ItemStack itemstack = null;
 
-		int decreaseAmount = Math.min(count, itemCounts[pos]);
+			int decreaseAmount = Math.min(count, itemCounts[pos] + items[pos].stackSize);
 
-		if (decreaseAmount > 0) {
-			itemCounts[pos] -= decreaseAmount;
-			itemstack = new ItemStack(items[pos].itemID, decreaseAmount, 0);
-			onInventoryChanged();
+			if (decreaseAmount > 0) {
+				itemCounts[pos] += items[pos].stackSize - decreaseAmount;
+				items[pos].stackSize = Math.min(ItemsPerInventorySlot, itemCounts[pos]);
+				itemCounts[pos] -= items[pos].stackSize;
+
+				itemstack = new ItemStack(items[pos].itemID, decreaseAmount, 0);
+
+				onInventoryChanged();
+			}
+
+			return itemstack;
+		} finally {
+			System.out.println("[" + (worldObj.isRemote ? "client" : "server") + "]     " + getItemCount(pos));
 		}
-
-		return itemstack;
 	}
 
 	@Override
@@ -147,16 +162,23 @@ public class TileEntityHeater extends TileEntityRectMultiblock implements IInven
 
 	@Override
 	public void setInventorySlotContents(int pos, ItemStack itemstack) {
-		if (pos < 0 || pos > 1 || itemstack == null) //
-			return;
+		try {
+			System.out.println("[" + (worldObj.isRemote ? "client" : "server") + "] setInventorySlotContents(" + pos + ", " + (itemstack == null ? 0 : itemstack.stackSize) + ")");
+			if (pos < 0 || pos > 1) //
+				return;
 
-		int maxCount = cachedBlockCount * MaxItemsPerBlock[pos];
-		int amount = Math.min(maxCount, itemstack.stackSize);
+			if (itemstack == null)
+				items[pos].stackSize = 0;
+			else
+				items[pos] = itemstack;
 
-		itemCounts[pos] += amount;
-		itemstack.stackSize -= amount;
-
-		onInventoryChanged();
+			if (items[pos].stackSize > ItemsPerInventorySlot) {
+				itemCounts[pos] += items[pos].stackSize - ItemsPerInventorySlot;
+				items[pos].stackSize = ItemsPerInventorySlot;
+			}
+		} finally {
+			System.out.println("[" + (worldObj.isRemote ? "client" : "server") + "]     " + getItemCount(pos));
+		}
 	}
 
 	@Override
@@ -191,8 +213,8 @@ public class TileEntityHeater extends TileEntityRectMultiblock implements IInven
 	protected void mergeThisMasterToNextOne(TileEntityRectMultiblock nextMaster) {
 		TileEntityHeater masterHeater = (TileEntityHeater) nextMaster;
 
-		masterHeater.addItems(0, itemCounts[0], null);
-		masterHeater.addItems(1, itemCounts[1], null);
+		masterHeater.addItems(FuelSlot, getItemCount(FuelSlot), null);
+		masterHeater.addItems(AshesSlot, getItemCount(AshesSlot), null);
 
 		masterHeater.quantizeUIGaugeValues();
 	}
@@ -205,11 +227,11 @@ public class TileEntityHeater extends TileEntityRectMultiblock implements IInven
 		if (members.size() == 0)
 			return;
 
-		int fuelPerMember = itemCounts[FuelSlot] / members.size();
-		int ashesPerMember = itemCounts[AshesSlot] / members.size();
+		int fuelPerMember = getItemCount(FuelSlot) / members.size();
+		int ashesPerMember = getItemCount(AshesSlot) / members.size();
 
-		int remainderFuel = itemCounts[FuelSlot] - fuelPerMember * members.size();
-		int remainderAshes = itemCounts[AshesSlot] - ashesPerMember * members.size();
+		int remainderFuel = getItemCount(FuelSlot) - fuelPerMember * members.size();
+		int remainderAshes = getItemCount(AshesSlot) - ashesPerMember * members.size();
 
 		boolean firstMember = true;
 		for (TileEntityRectMultiblock member : members) {
@@ -253,8 +275,8 @@ public class TileEntityHeater extends TileEntityRectMultiblock implements IInven
 			return;
 
 		float e = thermalEnergyContent;
-		int a = itemCounts[AshesSlot];
-		int f = itemCounts[FuelSlot];
+		int a = getItemCount(AshesSlot);
+		int f = getItemCount(FuelSlot);
 		try {
 			boolean onFire = burnFuelUpdate(deltaTime);
 			updateFireIcon(this);
@@ -288,7 +310,7 @@ public class TileEntityHeater extends TileEntityRectMultiblock implements IInven
 			thermalEnergyContent = Math.min(cachedBlockCount * MaxEnergyPerBlock, thermalEnergyContent);
 			thermalEnergyContent = Math.max(onFire ? .0001f : 0, thermalEnergyContent);
 		} finally {
-			if (e != thermalEnergyContent || a != itemCounts[AshesSlot] || f != itemCounts[FuelSlot]) {
+			if (e != thermalEnergyContent || a != getItemCount(AshesSlot) || f != getItemCount(FuelSlot)) {
 				worldObj.markBlockForUpdate(xCoord, yCoord, zCoord);
 				onInventoryChanged();
 				quantizeUIGaugeValues();
@@ -311,31 +333,31 @@ public class TileEntityHeater extends TileEntityRectMultiblock implements IInven
 	}
 
 	private boolean isHeaterActive() {
-		return thermalEnergyContent > 0 || burningFuelMass > 0 || (itemCounts[AshesSlot] < cachedBlockCount * AshesPerBlock && itemCounts[FuelSlot] > 0);
+		return thermalEnergyContent > 0 || burningFuelMass > 0 || (getItemCount(AshesSlot) < cachedBlockCount * AshesPerBlock && getItemCount(FuelSlot) > 0);
 	}
 
 	private boolean burnFuelUpdate(float deltaTime) {
-		if (!turnedOn || itemCounts[AshesSlot] >= cachedBlockCount * AshesPerBlock)
+		if (!turnedOn || getItemCount(AshesSlot) >= cachedBlockCount * AshesPerBlock)
 			return false;
 
 		float maxBurnAmount = cachedBlockCount * Fuel.amountBurning(deltaTime);
-		if (burningFuelMass < maxBurnAmount && itemCounts[FuelSlot] > 0) {
+		if (burningFuelMass < maxBurnAmount && getItemCount(FuelSlot) > 0) {
 			int maxItems = Math.max(1, (int) Math.floor((maxBurnAmount - burningFuelMass) / Fuel.kilosPerItem));
-			int nItems = Math.min(maxItems, itemCounts[FuelSlot]);
+			int nItems = Math.min(maxItems, getItemCount(FuelSlot));
 
 			for (int i = 0; i < nItems; ++i)
 				if (AshPropability > Math.random())
 					if (!incrementAshes())
 						nItems = i + 1;
 
-			itemCounts[FuelSlot] -= nItems;
+			decrStackSize(FuelSlot, nItems);
 			burningFuelMass += nItems * Fuel.kilosPerItem;
 		}
 
 		float burnAmount = Math.min(burningFuelMass, maxBurnAmount);
 		burningFuelMass -= burnAmount;
 
-		float energy = Efficiency * Fuel.energyBurning(burnAmount);
+		float energy = Fuel.energyBurning(burnAmount);
 		thermalEnergyContent += energy;
 		if (energy == 0) // internal cooldown
 			thermalEnergyContent *= .97f;
@@ -344,9 +366,13 @@ public class TileEntityHeater extends TileEntityRectMultiblock implements IInven
 	}
 
 	private boolean incrementAshes() {
-		if (itemCounts[AshesSlot] >= cachedBlockCount * AshesPerBlock)
+		if (getItemCount(AshesSlot) >= cachedBlockCount * AshesPerBlock)
 			return false;
-		++itemCounts[AshesSlot];
+		if (items[AshesSlot].stackSize < ItemsPerInventorySlot) {
+			++items[AshesSlot].stackSize;
+		} else {
+			++itemCounts[AshesSlot];
+		}
 		return true;
 	}
 
@@ -396,6 +422,20 @@ public class TileEntityHeater extends TileEntityRectMultiblock implements IInven
 		itemCounts[AshesSlot] = par1NBTTagCompound.getInteger("Ashes");
 		cachedBlockCount = par1NBTTagCompound.getInteger("Sz");
 
+		if (itemCounts[FuelSlot] > 0) {
+			items[FuelSlot].stackSize = Math.min(itemCounts[FuelSlot], ItemsPerInventorySlot);
+			itemCounts[FuelSlot] -= items[FuelSlot].stackSize;
+		} else
+			items[FuelSlot].stackSize = 0;
+
+		if (itemCounts[AshesSlot] > 0) {
+			items[AshesSlot].stackSize = Math.min(itemCounts[AshesSlot], ItemsPerInventorySlot);
+			itemCounts[AshesSlot] -= items[AshesSlot].stackSize;
+		} else
+			items[AshesSlot].stackSize = 0;
+
+		System.out.println("READ: " + getItemCount(FuelSlot));
+
 		quantizeUIGaugeValues();
 	}
 
@@ -408,8 +448,8 @@ public class TileEntityHeater extends TileEntityRectMultiblock implements IInven
 
 		par1NBTTagCompound.setFloat("NRG", thermalEnergyContent);
 		par1NBTTagCompound.setBoolean("On", turnedOn);
-		par1NBTTagCompound.setInteger("Fuel", itemCounts[FuelSlot]);
-		par1NBTTagCompound.setInteger("Ashes", itemCounts[AshesSlot]);
+		par1NBTTagCompound.setInteger("Fuel", getItemCount(FuelSlot));
+		par1NBTTagCompound.setInteger("Ashes", getItemCount(AshesSlot));
 		par1NBTTagCompound.setInteger("Sz", cachedBlockCount);
 	}
 

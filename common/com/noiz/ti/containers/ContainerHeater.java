@@ -17,8 +17,6 @@ public class ContainerHeater extends Container {
 	private TileEntityHeater heater;
 
 	private int quantizedEnergy;
-	private int fuelCount;
-	private int ashCount;
 	private int heatTargets;
 	private int quantizedOutput_Wh;
 
@@ -26,7 +24,7 @@ public class ContainerHeater extends Container {
 
 		this.heater = heater;
 
-		addSlotToContainer(new CoalFuelSlot(heater, 0, 84, 25));
+		addSlotToContainer(new CoalFuelSlot(heater, 0, 84, 25, heater.getMaxItemCount(TileEntityHeater.FuelSlot)));
 		addSlotToContainer(new OutputOnlySlot(heater, 1, 84, 46));
 
 		bindPlayerInventory(inventoryplayer);
@@ -50,8 +48,6 @@ public class ContainerHeater extends Container {
 	public void addCraftingToCrafters(ICrafting par1iCrafting) {
 		super.addCraftingToCrafters(par1iCrafting);
 		par1iCrafting.sendProgressBarUpdate(this, 0, heater.quantizedEnergy);
-		par1iCrafting.sendProgressBarUpdate(this, 1, heater.getItemCount(TileEntityHeater.FuelSlot));
-		par1iCrafting.sendProgressBarUpdate(this, 2, heater.getItemCount(TileEntityHeater.AshesSlot));
 		par1iCrafting.sendProgressBarUpdate(this, 3, heater.heatTargets());
 		par1iCrafting.sendProgressBarUpdate(this, 4, heater.quantizedOutput_Wh);
 	}
@@ -66,12 +62,6 @@ public class ContainerHeater extends Container {
 			if (quantizedEnergy != heater.quantizedEnergy)
 				icrafting.sendProgressBarUpdate(this, 0, heater.quantizedEnergy);
 
-			if (fuelCount != heater.getItemCount(TileEntityHeater.FuelSlot))
-				icrafting.sendProgressBarUpdate(this, 1, heater.getItemCount(TileEntityHeater.FuelSlot));
-
-			if (ashCount != heater.getItemCount(TileEntityHeater.AshesSlot))
-				icrafting.sendProgressBarUpdate(this, 2, heater.getItemCount(TileEntityHeater.AshesSlot));
-
 			if (heatTargets != heater.heatTargets())
 				icrafting.sendProgressBarUpdate(this, 3, heater.heatTargets());
 
@@ -80,8 +70,6 @@ public class ContainerHeater extends Container {
 		}
 
 		quantizedEnergy = heater.quantizedEnergy;
-		fuelCount = heater.getItemCount(TileEntityHeater.FuelSlot);
-		ashCount = heater.getItemCount(TileEntityHeater.AshesSlot);
 		heatTargets = heater.heatTargets();
 		quantizedOutput_Wh = heater.quantizedOutput_Wh;
 	}
@@ -90,10 +78,6 @@ public class ContainerHeater extends Container {
 	public void updateProgressBar(int par1, int par2) {
 		if (par1 == 0)
 			heater.quantizedEnergy = par2;
-		if (par1 == 1)
-			heater.setItemCount(TileEntityHeater.FuelSlot, par2);
-		if (par1 == 2)
-			heater.setItemCount(TileEntityHeater.AshesSlot, par2);
 		if (par1 == 3)
 			heater.setHeatTargets(par2);
 		if (par1 == 4)
@@ -102,6 +86,9 @@ public class ContainerHeater extends Container {
 
 	@Override
 	public ItemStack transferStackInSlot(EntityPlayer entityPlayer, int slot) {
+		if (slot < 2) // skip the heater's own inventory
+			return null;
+
 		Slot userSlot = (Slot) inventorySlots.get(slot);
 		Slot heaterSlot = getSlot(TileEntityHeater.FuelSlot);
 
@@ -109,20 +96,22 @@ public class ContainerHeater extends Container {
 			return null;
 
 		if (!heaterSlot.getHasStack()) {
-			heaterSlot.putStack(userSlot.decrStackSize(Math.min(64, userSlot.getStack().stackSize)));
+			heaterSlot.putStack(userSlot.decrStackSize(userSlot.getStack().stackSize));
 			return null;
 		}
 
 		if (heaterSlot.getStack().isItemEqual(userSlot.getStack())) {
-			int original = heaterSlot.getStack().stackSize;
+			int delta = Math.min(userSlot.getStack().stackSize, heater.getMaxItemCount(TileEntityHeater.FuelSlot) - heater.getItemCount(TileEntityHeater.FuelSlot));
 
-			int delta = heater.addItems(TileEntityHeater.FuelSlot, userSlot.getStack().stackSize, heaterSlot.getStack());
+			ItemStack newStack = new ItemStack(heaterSlot.getStack().itemID, heaterSlot.getStack().stackSize + delta, 0);
+			heaterSlot.putStack(newStack);
+
 			userSlot.getStack().stackSize -= delta;
 
 			if (userSlot.getStack().stackSize == 0)
 				userSlot.putStack(null);
 
-			if (original != heaterSlot.getStack().stackSize)
+			if (delta != 0)
 				heaterSlot.onSlotChanged();
 			userSlot.onSlotChanged();
 		}
