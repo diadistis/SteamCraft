@@ -211,6 +211,24 @@ public abstract class TileEntityRectMultiblock extends TileEntity {
 		return struct.baseArea();
 	}
 
+	protected int[] centerCoordinates() {
+		if (structureID == null)
+			return new int[] { xCoord, yCoord, zCoord };
+		Structure struct = structures.get(structureID);
+		if (struct == null)
+			return new int[] { xCoord, yCoord, zCoord };
+		return struct.centerCoordinates();
+	}
+	
+	protected int structureRadius() {
+		if (structureID == null)
+			return 0;
+		Structure struct = structures.get(structureID);
+		if (struct == null)
+			return 0;
+		return struct.radius();
+	}
+
 	protected int touchingHorizontalArea(TileEntityRectMultiblock other) {
 		if (structureID == null)
 			return 1;

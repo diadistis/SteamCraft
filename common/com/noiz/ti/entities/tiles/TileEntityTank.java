@@ -19,6 +19,7 @@ import com.noiz.ti.physics.Water;
 
 public class TileEntityTank extends TileEntityRectMultiblock implements IHeatable {
 
+	public static final boolean TanksExplode = true;
 	public static final int UpdatePeriodTicks = 40;
 
 	public static final float LiquidPerBucket = 10f;
@@ -165,6 +166,11 @@ public class TileEntityTank extends TileEntityRectMultiblock implements IHeatabl
 			else
 				realTemperatureTarget = 0;
 			temperature = Math.max(minTemperature, temperature);
+
+			if (TanksExplode && pressure() > MaxPressure) {
+				int[] center = centerCoordinates();
+				worldObj.createExplosion(null, (double) center[0], (double) center[1], (double) center[2], 1 + 1.2f * structureRadius(), true);
+			}
 		} finally {
 			if (w != waterAmount || t != temperature) {
 				quantizeUIGaugeValues();

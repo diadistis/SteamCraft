@@ -8,6 +8,8 @@ class Structure {
 
 	private final int block_count;
 	private final int base_area;
+	private final int[] center_coords;
+	private final int radius;
 
 	Structure(int[] minCoords, int[] maxCoords) {
 		this.minCoords = minCoords;
@@ -15,6 +17,8 @@ class Structure {
 
 		this.block_count = (maxCoords[0] - minCoords[0] + 1) * (maxCoords[1] - minCoords[1] + 1) * (maxCoords[2] - minCoords[2] + 1);
 		this.base_area = (maxCoords[0] - minCoords[0] + 1) * (maxCoords[2] - minCoords[2] + 1);
+		this.center_coords = new int[] { (minCoords[0] + maxCoords[0]) / 2, (minCoords[1] + maxCoords[1]) / 2, (minCoords[2] + maxCoords[2]) / 2, };
+		this.radius = Math.max(Math.abs(center_coords[0] - minCoords[0]), Math.max(Math.abs(center_coords[1] - minCoords[1]), Math.abs(center_coords[2] - minCoords[2])));
 	}
 
 	boolean isValid(int[] limits) {
@@ -54,6 +58,14 @@ class Structure {
 
 	int baseArea() {
 		return base_area;
+	}
+
+	int[] centerCoordinates() {
+		return center_coords;
+	}
+
+	int radius() {
+		return radius;
 	}
 
 	int touchingHorizontalArea(Structure other) {
