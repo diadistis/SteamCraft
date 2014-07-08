@@ -38,7 +38,7 @@ public class TileEntityHeater extends TileEntityRectMultiblock implements IInven
 	public static final int ItemsPerInventorySlot = 32;
 
 	public static final float Efficiency = .86f;
-	public static final float MaxEnergy = 100000000; // ~ 100k BTU
+	public static final float MaxEnergyPerBlock = 40000000; // ~ 40k BTU
 	public static final float AshPropability = .1f;
 
 	public static final FuelMaterial Fuel = FuelMaterial.Coal;
@@ -51,6 +51,9 @@ public class TileEntityHeater extends TileEntityRectMultiblock implements IInven
 	private IHeatable[] heatables = null;
 	private int heatTargetsOverride = 0;
 
+	private boolean turnedOn = true;
+	private int cachedBlockCount = 1;
+
 	private float burningFuelMass = .0f;
 	private float thermalEnergyContent = 0;
 
@@ -59,6 +62,10 @@ public class TileEntityHeater extends TileEntityRectMultiblock implements IInven
 
 	public int quantizedEnergy = 0;
 	public int quantizedOutput_Wh = 0;
+	
+	public int structureSize() {
+		return cachedBlockCount;
+	}
 
 	public int heatTargets() {
 		return heatables == null ? heatTargetsOverride : heatables.length;
@@ -78,7 +85,7 @@ public class TileEntityHeater extends TileEntityRectMultiblock implements IInven
 	}
 
 	public int getMaxItemCount(int pos) {
-		return MaxItemsPerBlock[pos] * structureBlockCount();
+		return MaxItemsPerBlock[pos] * cachedBlockCount;
 	}
 
 	@Override
@@ -92,7 +99,7 @@ public class TileEntityHeater extends TileEntityRectMultiblock implements IInven
 	}
 
 	public int addItems(int pos, int count, ItemStack stack2update) {
-		count = Math.min(count, structureBlockCount() * MaxItemsPerBlock[pos] - itemCounts[pos]);
+		count = Math.min(count, cachedBlockCount * MaxItemsPerBlock[pos] - itemCounts[pos]);
 		itemCounts[pos] += count;
 		items[pos].stackSize = Math.min(itemCounts[pos], ItemsPerInventorySlot);
 		if (stack2update != null)
@@ -143,7 +150,7 @@ public class TileEntityHeater extends TileEntityRectMultiblock implements IInven
 		if (pos < 0 || pos > 1 || itemstack == null) //
 			return;
 
-		int maxCount = structureBlockCount() * MaxItemsPerBlock[pos];
+		int maxCount = cachedBlockCount * MaxItemsPerBlock[pos];
 		int amount = Math.min(maxCount, itemstack.stackSize);
 
 		itemCounts[pos] += amount;
@@ -217,12 +224,14 @@ public class TileEntityHeater extends TileEntityRectMultiblock implements IInven
 				setItemCount(AshesSlot, ashesPerMember);
 			}
 
+			heater.cachedBlockCount = 1;
 			heater.quantizeUIGaugeValues();
 		}
 	}
 
 	@Override
 	protected void structureCreatedWithThisAsMaster() {
+		cachedBlockCount = structureBlockCount();
 		scanForHeatables();
 	}
 
@@ -275,7 +284,7 @@ public class TileEntityHeater extends TileEntityRectMultiblock implements IInven
 			} else
 				quantizedOutput_Wh = 0;
 
-			this.thermalEnergyContent -= Thermodynamics.airEnergyAbsorption(deltaTime, Fuel.burningTemperature, structureBlockCount() / 5f, StructureMaterial, xCoord, zCoord);
+			this.thermalEnergyContent -= Thermodynamics.airEnergyAbsorption(deltaTime, Fuel.burningTemperature, cachedBlockCount / 5f, StructureMaterial, xCoord, zCoord);
 			this.thermalEnergyContent = Math.max(onFire ? .0001f : 0, thermalEnergyContent);
 		} finally {
 			if (e != thermalEnergyContent || a != itemCounts[AshesSlot] || f != itemCounts[FuelSlot]) {
@@ -301,14 +310,14 @@ public class TileEntityHeater extends TileEntityRectMultiblock implements IInven
 	}
 
 	private boolean isHeaterActive() {
-		return thermalEnergyContent > 0 || burningFuelMass > 0 || (itemCounts[AshesSlot] < structureBlockCount() * AshesPerBlock && itemCounts[FuelSlot] > 0);
+		return thermalEnergyContent > 0 || burningFuelMass > 0 || (itemCounts[AshesSlot] < cachedBlockCount * AshesPerBlock && itemCounts[FuelSlot] > 0);
 	}
 
 	private boolean burnFuelUpdate(float deltaTime) {
-		if (itemCounts[AshesSlot] >= structureBlockCount() * AshesPerBlock)
+		if (!turnedOn || itemCounts[AshesSlot] >= cachedBlockCount * AshesPerBlock)
 			return false;
 
-		float maxBurnAmount = Fuel.amountBurning(deltaTime);
+		float maxBurnAmount = .6f * cachedBlockCount * Fuel.amountBurning(deltaTime);
 		if (burningFuelMass < maxBurnAmount && itemCounts[FuelSlot] > 0) {
 			int maxItems = Math.max(1, (int) Math.floor((maxBurnAmount - burningFuelMass) / Fuel.kilosPerItem));
 			int nItems = Math.min(maxItems, itemCounts[FuelSlot]);
@@ -329,13 +338,13 @@ public class TileEntityHeater extends TileEntityRectMultiblock implements IInven
 		thermalEnergyContent += energy;
 		if (energy == 0) // internal cooldown
 			thermalEnergyContent *= .97f;
-		thermalEnergyContent = Math.min(MaxEnergy, thermalEnergyContent);
+		thermalEnergyContent = Math.min(cachedBlockCount * MaxEnergyPerBlock, thermalEnergyContent);
 
 		return burnAmount > 0 && energy > 0;
 	}
 
 	private boolean incrementAshes() {
-		if (itemCounts[AshesSlot] >= structureBlockCount() * AshesPerBlock)
+		if (itemCounts[AshesSlot] >= cachedBlockCount * AshesPerBlock)
 			return false;
 		++itemCounts[AshesSlot];
 		return true;
@@ -382,8 +391,10 @@ public class TileEntityHeater extends TileEntityRectMultiblock implements IInven
 			return;
 
 		thermalEnergyContent = par1NBTTagCompound.getFloat("NRG");
+		turnedOn = par1NBTTagCompound.hasKey("On") ? par1NBTTagCompound.getBoolean("On") : true;
 		itemCounts[FuelSlot] = par1NBTTagCompound.getInteger("Fuel");
 		itemCounts[AshesSlot] = par1NBTTagCompound.getInteger("Ashes");
+		cachedBlockCount = par1NBTTagCompound.getInteger("Sz");
 
 		quantizeUIGaugeValues();
 	}
@@ -396,8 +407,10 @@ public class TileEntityHeater extends TileEntityRectMultiblock implements IInven
 			return;
 
 		par1NBTTagCompound.setFloat("NRG", thermalEnergyContent);
+		par1NBTTagCompound.setBoolean("On", turnedOn);
 		par1NBTTagCompound.setInteger("Fuel", itemCounts[FuelSlot]);
 		par1NBTTagCompound.setInteger("Ashes", itemCounts[AshesSlot]);
+		par1NBTTagCompound.setInteger("Sz", cachedBlockCount);
 	}
 
 	@Override
@@ -407,6 +420,6 @@ public class TileEntityHeater extends TileEntityRectMultiblock implements IInven
 	}
 
 	private void quantizeUIGaugeValues() {
-		quantizedEnergy = GUITools.quantize(thermalEnergyContent, MaxEnergy);
+		quantizedEnergy = GUITools.quantize(thermalEnergyContent, cachedBlockCount * MaxEnergyPerBlock);
 	}
 }

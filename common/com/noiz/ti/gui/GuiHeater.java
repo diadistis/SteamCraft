@@ -29,11 +29,6 @@ public class GuiHeater extends GuiContainer {
 	}
 
 	@Override
-	public void onGuiClosed() {
-		super.onGuiClosed();
-	}
-
-	@Override
 	protected void drawGuiContainerBackgroundLayer(float f, int i, int j) {
 		TFC_Core.bindTexture(new ResourceLocation(TerraIndustrialisConstants.ModId + ":textures/gui/gui_heater.png"));
 		GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
@@ -49,7 +44,7 @@ public class GuiHeater extends GuiContainer {
 		int ash_pc = (int) Math.ceil((100f * heater.getItemCount(TileEntityHeater.AshesSlot)) / heater.getMaxItemCount(TileEntityHeater.AshesSlot));
 		String ash = String.format("%d (%d%%)", heater.getItemCount(TileEntityHeater.AshesSlot), ash_pc);
 
-		float nrg = heater.energy();
+		float nrg = GUITools.reverseQuantize(heater.quantizedEnergy, heater.structureSize() * TileEntityHeater.MaxEnergyPerBlock);
 		float btu = Units.joule2btu(nrg);
 
 		int b_pfx = 0;
@@ -79,10 +74,6 @@ public class GuiHeater extends GuiContainer {
 		fontrenderer.drawString(s, i - fontrenderer.getStringWidth(s) / 2, j, k);
 	}
 
-	/**
-	 * This function is what controls the hotbar shortcut check when you press a
-	 * number key when hovering a stack.
-	 */
 	@Override
 	protected boolean checkHotbarKeys(int par1) {
 		if (this.mc.thePlayer.inventory.currentItem != par1 - 2) {

@@ -79,6 +79,7 @@ public abstract class TileEntityRectMultiblock extends TileEntity {
 			entity.setStructureMaster(newMaster, id, struct);
 
 		newMaster.structureCreatedWithThisAsMaster();
+		newMaster.onInventoryChanged();
 		player.addChatMessage("Structure built!");
 	}
 

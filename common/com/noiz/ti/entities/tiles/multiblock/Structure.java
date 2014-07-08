@@ -6,9 +6,15 @@ class Structure {
 	final int[] minCoords;
 	final int[] maxCoords;
 
+	private final int block_count;
+	private final int base_area;
+
 	Structure(int[] minCoords, int[] maxCoords) {
 		this.minCoords = minCoords;
 		this.maxCoords = maxCoords;
+
+		this.block_count = (maxCoords[0] - minCoords[0] + 1) * (maxCoords[1] - minCoords[1] + 1) * (maxCoords[2] - minCoords[2] + 1);
+		this.base_area = (maxCoords[0] - minCoords[0] + 1) * (maxCoords[2] - minCoords[2] + 1);
 	}
 
 	boolean isValid(int[] limits) {
@@ -43,11 +49,11 @@ class Structure {
 	}
 
 	int blockCount() {
-		return (maxCoords[0] - minCoords[0] + 1) * (maxCoords[1] - minCoords[1] + 1) * (maxCoords[2] - minCoords[2] + 1);
+		return block_count;
 	}
 
 	int baseArea() {
-		return (maxCoords[0] - minCoords[0] + 1) * (maxCoords[2] - minCoords[2] + 1);
+		return base_area;
 	}
 
 	int touchingHorizontalArea(Structure other) {
