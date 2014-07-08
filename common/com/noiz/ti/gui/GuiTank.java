@@ -53,7 +53,8 @@ public class GuiTank extends GuiContainer {
 
 		fontRenderer.drawString(water, w + 65, h + 15, 0x3c3c3c);
 		fontRenderer.drawString(status, w + 65, h + 28, 0x3c3c3c);
-		fontRenderer.drawString(pressure, w + 65, h + 54, warning ? 0xec3c3c : 0x3c3c3c);
+		if (tank.temperature() >= 100)//
+			fontRenderer.drawString(pressure, w + 65, h + 54, warning ? 0xec3c3c : 0x3c3c3c);
 		fontRenderer.drawString(tempr, w + 65, h + 67, warning ? 0xec3c3c : 0x3c3c3c);
 
 		PlayerInventory.drawInventory(this, width, height, ySize - PlayerInventory.invYSize);

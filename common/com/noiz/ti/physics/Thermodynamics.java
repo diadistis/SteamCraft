@@ -19,7 +19,7 @@ public class Thermodynamics {
 
 		float srcTemp = source.temperature();
 		for (int i = 0; i < heatables.length; ++i) {
-			transfers[i] = deltaTime * conductor.thermalConductivity * .5f * heatables[i].area(source) * (srcTemp - heatables[i].temperature());
+			transfers[i] = deltaTime * conductor.thermalConductivity * heatables[i].area(source) * (srcTemp - heatables[i].temperature());
 			totalTransfer += Math.max(0, transfers[i]);
 		}
 		totalTransfer /= heatables.length;
@@ -33,7 +33,7 @@ public class Thermodynamics {
 		}
 
 		for (int i = 0; i < heatables.length; ++i)
-			heatables[i].doHeatTransfer(transfers[i]);
+			heatables[i].doHeatTransfer(transfers[i], deltaTime);
 
 		return totalTransfer;
 	}

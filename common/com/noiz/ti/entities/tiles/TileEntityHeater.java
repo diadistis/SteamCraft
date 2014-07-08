@@ -62,7 +62,7 @@ public class TileEntityHeater extends TileEntityRectMultiblock implements IInven
 
 	public int quantizedEnergy = 0;
 	public int quantizedOutput_Wh = 0;
-	
+
 	public int structureSize() {
 		return cachedBlockCount;
 	}
@@ -317,7 +317,7 @@ public class TileEntityHeater extends TileEntityRectMultiblock implements IInven
 		if (!turnedOn || itemCounts[AshesSlot] >= cachedBlockCount * AshesPerBlock)
 			return false;
 
-		float maxBurnAmount = .6f * cachedBlockCount * Fuel.amountBurning(deltaTime);
+		float maxBurnAmount = cachedBlockCount * Fuel.amountBurning(deltaTime);
 		if (burningFuelMass < maxBurnAmount && itemCounts[FuelSlot] > 0) {
 			int maxItems = Math.max(1, (int) Math.floor((maxBurnAmount - burningFuelMass) / Fuel.kilosPerItem));
 			int nItems = Math.min(maxItems, itemCounts[FuelSlot]);

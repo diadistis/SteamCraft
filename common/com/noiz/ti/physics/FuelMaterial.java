@@ -2,9 +2,9 @@ package com.noiz.ti.physics;
 
 public enum FuelMaterial {
 	//
-	Charcoal(.05f, Units.Mega(30), 350, 1f),
+	Charcoal(.1f, Units.Mega(30), 350, 1f),
 	//
-	Coal(.05f, Units.Mega(31), 400, 1f),
+	Coal(.1f, Units.Mega(31), 400, 1f),
 	//
 	;
 

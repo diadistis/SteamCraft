@@ -1,5 +1,6 @@
 package com.noiz.ti.entities.tiles;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import net.minecraft.nbt.NBTTagCompound;
@@ -31,8 +32,9 @@ public class TileEntityTank extends TileEntityRectMultiblock implements IHeatabl
 
 	private float waterAmount = 0;
 	private float temperature = 0;
-	// amount of energy taken since last update.
-	private float influx = 0;
+	// amount of energy taken since last update (paired w/ the time duration of
+	// their application).
+	private final List<float[]> influx = new ArrayList<>();
 
 	private long lastUpdate = 0;
 
@@ -52,8 +54,8 @@ public class TileEntityTank extends TileEntityRectMultiblock implements IHeatabl
 	}
 
 	@Override
-	public void doHeatTransfer(float energy) {
-		influx += energy;
+	public void doHeatTransfer(float energy, float time) {
+		influx.add(new float[] { energy, time });
 	}
 
 	@Override
@@ -69,7 +71,7 @@ public class TileEntityTank extends TileEntityRectMultiblock implements IHeatabl
 	public String status() {
 		if (temperature > 100f)
 			return waterAmount > 0 ? "Boiling" : "Heating";
-		return "Idle";
+		return temperature > 0 ? "Heating" : "Idle";
 	}
 
 	public boolean isFull() {
@@ -129,10 +131,12 @@ public class TileEntityTank extends TileEntityRectMultiblock implements IHeatabl
 			float minTemperature = TFC_Climate.getBioTemperature(xCoord, zCoord);
 
 			if (waterAmount > 0) {
-				float dt = Efficiency * influx / (waterAmount * Water.SpecificHeat);
+				float dt = 0;
+				for (float[] et : influx)
+					dt += Efficiency * et[0] / (waterAmount * Water.SpecificHeat * et[1]);
 				temperature += dt;
 			}
-			influx = 0;
+			influx.clear();
 
 			float area = LossAreaCoefficient * structureBlockCount();
 			temperature -= Thermodynamics.airEnergyAbsorption(deltaTime, temperature, area, SolidMaterial.Steel, xCoord, zCoord);
