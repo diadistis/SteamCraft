@@ -2,9 +2,9 @@ package com.noiz.ti.physics;
 
 public enum SolidMaterial {
 	//
-	Steel(1),
+	Steel(8),
 	//
-	StainlessSteel(1),
+	StainlessSteel(10),
 	//
 	;
 
