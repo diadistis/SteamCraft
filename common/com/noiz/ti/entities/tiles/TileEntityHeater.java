@@ -142,7 +142,7 @@ public class TileEntityHeater extends TileEntityRectMultiblock implements IInven
 			items[pos].stackSize = Math.min(ItemsPerInventorySlot, itemCounts[pos]);
 			itemCounts[pos] -= items[pos].stackSize;
 
-			itemstack = new ItemStack(items[pos].itemID, decreaseAmount, 0);
+			itemstack = new ItemStack(items[pos].itemID, decreaseAmount, items[pos].getItemDamage());
 
 			onInventoryChanged();
 		}

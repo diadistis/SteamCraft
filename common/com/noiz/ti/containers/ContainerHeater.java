@@ -103,7 +103,7 @@ public class ContainerHeater extends Container {
 		if (heaterSlot.getStack().isItemEqual(userSlot.getStack())) {
 			int delta = Math.min(userSlot.getStack().stackSize, heater.getMaxItemCount(TileEntityHeater.FuelSlot) - heater.getItemCount(TileEntityHeater.FuelSlot));
 
-			ItemStack newStack = new ItemStack(heaterSlot.getStack().itemID, heaterSlot.getStack().stackSize + delta, 0);
+			ItemStack newStack = new ItemStack(heaterSlot.getStack().itemID, heaterSlot.getStack().stackSize + delta, userSlot.getStack().getItemDamage());
 			heaterSlot.putStack(newStack);
 
 			userSlot.getStack().stackSize -= delta;

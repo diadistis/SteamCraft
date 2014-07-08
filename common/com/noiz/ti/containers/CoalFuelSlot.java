@@ -16,14 +16,16 @@ public class CoalFuelSlot extends Slot {
 		this.heater = heater;
 	}
 
+	@Override
 	public boolean isItemValid(ItemStack itemstack) {
 		ItemStack fuel = heater.getStackInSlot(TileEntityHeater.FuelSlot);
-		if( fuel != null && fuel.stackSize > 0 && fuel.getItemDamage() != itemstack.getItemDamage() )
+		if (fuel != null && fuel.stackSize > 0 && fuel.getItemDamage() != itemstack.getItemDamage())
 			return false;
-		
+
 		return itemstack.itemID == Item.coal.itemID;
 	}
 
+	@Override
 	public int getSlotStackLimit() {
 		return heater.getMaxItemCount(TileEntityHeater.FuelSlot);
 	}
