@@ -31,6 +31,7 @@ public class TileEntityTank extends TileEntityRectMultiblock implements IHeatabl
 
 	private float waterAmount = 0;
 	private float temperature = 0;
+	private float realTemperatureTarget = 0;
 	// amount of energy taken since last update (paired w/ the associated
 	// maximum temperature).
 	private final List<float[]> influx = new ArrayList<>();
@@ -77,11 +78,20 @@ public class TileEntityTank extends TileEntityRectMultiblock implements IHeatabl
 		return waterAmount >= structureBlockCount() * CapacityPerBlock;
 	}
 
-	public void addBucket() {
-		waterAmount = Math.min(structureBlockCount() * CapacityPerBlock, waterAmount + LiquidPerBucket);
+	public float addWater(float amount) {
+		float delta = Math.min(structureBlockCount() * CapacityPerBlock - waterAmount, amount);
+		if (delta == 0)
+			return 0;
 
-		quantizedWater = (int) (waterAmount * GUITools.GUI_GaugeScale / (structureBlockCount() * CapacityPerBlock));
+		float existingMassSpecific = waterAmount * Water.SpecificHeat;
+		float addedMassSpecific = delta * Water.SpecificHeat;
+
+		temperature = (existingMassSpecific * temperature + addedMassSpecific * TFC_Climate.getBioTemperature(xCoord, zCoord)) / (existingMassSpecific + addedMassSpecific);
+		waterAmount += delta;
+
+		quantizeUIGaugeValues();
 		onInventoryChanged();
+		return delta;
 	}
 
 	@Override
@@ -131,13 +141,29 @@ public class TileEntityTank extends TileEntityRectMultiblock implements IHeatabl
 
 			if (waterAmount > 0) {
 				for (float[] et : influx)
-					if (temperature < et[1])
-						temperature = Math.min(et[1], temperature + et[0] / (waterAmount * Water.SpecificHeat));
+					if (temperature < et[1]) {
+						float delta = et[0] / (waterAmount * Water.SpecificHeat);
+						if (realTemperatureTarget < 0) {
+							if (delta < -realTemperatureTarget) {
+								realTemperatureTarget += delta;
+								delta = 0;
+							} else {
+								delta += realTemperatureTarget;
+								realTemperatureTarget = 0;
+							}
+						}
+						if (delta > 0)
+							temperature = Math.min(et[1], temperature + delta);
+					}
 			}
 			influx.clear();
 
 			float area = LossAreaCoefficient * structureBlockCount();
 			temperature -= Thermodynamics.airEnergyAbsorption(deltaTime, temperature, area, SolidMaterial.Steel, xCoord, zCoord);
+			if (temperature < 0) //
+				realTemperatureTarget = temperature;
+			else
+				realTemperatureTarget = 0;
 			temperature = Math.max(minTemperature, temperature);
 		} finally {
 			if (w != waterAmount || t != temperature) {

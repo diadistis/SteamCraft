@@ -130,29 +130,24 @@ public class TileEntityHeater extends TileEntityRectMultiblock implements IInven
 
 	@Override
 	public ItemStack decrStackSize(int pos, int count) {
-		try {
-			System.out.println("[" + (worldObj.isRemote ? "client" : "server") + "] decrStackSize(" + pos + ", " + count + ")");
-			if (pos < 0 || pos > 1)
-				return null;
+		if (pos < 0 || pos > 1)
+			return null;
 
-			ItemStack itemstack = null;
+		ItemStack itemstack = null;
 
-			int decreaseAmount = Math.min(count, itemCounts[pos] + items[pos].stackSize);
+		int decreaseAmount = Math.min(count, itemCounts[pos] + items[pos].stackSize);
 
-			if (decreaseAmount > 0) {
-				itemCounts[pos] += items[pos].stackSize - decreaseAmount;
-				items[pos].stackSize = Math.min(ItemsPerInventorySlot, itemCounts[pos]);
-				itemCounts[pos] -= items[pos].stackSize;
+		if (decreaseAmount > 0) {
+			itemCounts[pos] += items[pos].stackSize - decreaseAmount;
+			items[pos].stackSize = Math.min(ItemsPerInventorySlot, itemCounts[pos]);
+			itemCounts[pos] -= items[pos].stackSize;
 
-				itemstack = new ItemStack(items[pos].itemID, decreaseAmount, 0);
+			itemstack = new ItemStack(items[pos].itemID, decreaseAmount, 0);
 
-				onInventoryChanged();
-			}
-
-			return itemstack;
-		} finally {
-			System.out.println("[" + (worldObj.isRemote ? "client" : "server") + "]     " + getItemCount(pos));
+			onInventoryChanged();
 		}
+
+		return itemstack;
 	}
 
 	@Override
@@ -162,22 +157,17 @@ public class TileEntityHeater extends TileEntityRectMultiblock implements IInven
 
 	@Override
 	public void setInventorySlotContents(int pos, ItemStack itemstack) {
-		try {
-			System.out.println("[" + (worldObj.isRemote ? "client" : "server") + "] setInventorySlotContents(" + pos + ", " + (itemstack == null ? 0 : itemstack.stackSize) + ")");
-			if (pos < 0 || pos > 1) //
-				return;
+		if (pos < 0 || pos > 1) //
+			return;
 
-			if (itemstack == null)
-				items[pos].stackSize = 0;
-			else
-				items[pos] = itemstack;
+		if (itemstack == null)
+			items[pos].stackSize = 0;
+		else
+			items[pos] = itemstack;
 
-			if (items[pos].stackSize > ItemsPerInventorySlot) {
-				itemCounts[pos] += items[pos].stackSize - ItemsPerInventorySlot;
-				items[pos].stackSize = ItemsPerInventorySlot;
-			}
-		} finally {
-			System.out.println("[" + (worldObj.isRemote ? "client" : "server") + "]     " + getItemCount(pos));
+		if (items[pos].stackSize > ItemsPerInventorySlot) {
+			itemCounts[pos] += items[pos].stackSize - ItemsPerInventorySlot;
+			items[pos].stackSize = ItemsPerInventorySlot;
 		}
 	}
 
@@ -433,8 +423,6 @@ public class TileEntityHeater extends TileEntityRectMultiblock implements IInven
 			itemCounts[AshesSlot] -= items[AshesSlot].stackSize;
 		} else
 			items[AshesSlot].stackSize = 0;
-
-		System.out.println("READ: " + getItemCount(FuelSlot));
 
 		quantizeUIGaugeValues();
 	}

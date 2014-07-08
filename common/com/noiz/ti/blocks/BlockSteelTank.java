@@ -84,7 +84,7 @@ public class BlockSteelTank extends Block implements ITileEntityProvider {
 
 		if (!tank.isFull()) {
 			if (equipped != null && equipped.getItem().itemID == TFCItems.WoodenBucketWater.itemID) {
-				tank.addBucket();
+				tank.addWater(TileEntityTank.LiquidPerBucket);
 				if (equipped.stackSize == 1)
 					equipped.itemID = TFCItems.WoodenBucketEmpty.itemID;
 				else {
@@ -108,7 +108,7 @@ public class BlockSteelTank extends Block implements ITileEntityProvider {
 		TileEntityRectMultiblock tank = (TileEntityRectMultiblock) world.getBlockTileEntity(x, y, z);
 		if (tank == null)
 			return;
-		
+
 		tank.onDestroy(world);
 	}
 }
