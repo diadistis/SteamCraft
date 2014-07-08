@@ -14,7 +14,7 @@ import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
 public class ContainerHeater extends Container {
-	private TileEntityHeater heater;
+	private final TileEntityHeater heater;
 
 	private int quantizedEnergy;
 	private int heatTargets;
@@ -24,7 +24,7 @@ public class ContainerHeater extends Container {
 
 		this.heater = heater;
 
-		addSlotToContainer(new CoalFuelSlot(heater, 0, 84, 25, heater.getMaxItemCount(TileEntityHeater.FuelSlot)));
+		addSlotToContainer(new CoalFuelSlot(heater, 0, 84, 25, heater));
 		addSlotToContainer(new OutputOnlySlot(heater, 1, 84, 46));
 
 		bindPlayerInventory(inventoryplayer);

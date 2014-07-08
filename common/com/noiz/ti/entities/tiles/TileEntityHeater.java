@@ -396,7 +396,13 @@ public class TileEntityHeater extends TileEntityRectMultiblock implements IInven
 
 	@Override
 	public boolean isItemValidForSlot(int pos, ItemStack itemstack) {
-		return pos == 0 && itemstack.getItem().itemID == Item.coal.itemID;
+		if (pos != FuelSlot)
+			return false;
+
+		if (items[FuelSlot].getItemDamage() != itemstack.getItemDamage())
+			return false;
+
+		return itemstack.getItem().itemID == Item.coal.itemID;
 	}
 
 	@Override
@@ -411,6 +417,8 @@ public class TileEntityHeater extends TileEntityRectMultiblock implements IInven
 		itemCounts[FuelSlot] = par1NBTTagCompound.getInteger("Fuel");
 		itemCounts[AshesSlot] = par1NBTTagCompound.getInteger("Ashes");
 		cachedBlockCount = par1NBTTagCompound.getInteger("Sz");
+		int fuelDamage = par1NBTTagCompound.hasKey("Fdmg") ? par1NBTTagCompound.getInteger("Fdmg") : 0;
+		items[FuelSlot].setItemDamage(fuelDamage);
 
 		if (itemCounts[FuelSlot] > 0) {
 			items[FuelSlot].stackSize = Math.min(itemCounts[FuelSlot], ItemsPerInventorySlot);
@@ -439,6 +447,7 @@ public class TileEntityHeater extends TileEntityRectMultiblock implements IInven
 		par1NBTTagCompound.setInteger("Fuel", getItemCount(FuelSlot));
 		par1NBTTagCompound.setInteger("Ashes", getItemCount(AshesSlot));
 		par1NBTTagCompound.setInteger("Sz", cachedBlockCount);
+		par1NBTTagCompound.setInteger("Fdmg", items[FuelSlot].getItemDamage());
 	}
 
 	@Override
